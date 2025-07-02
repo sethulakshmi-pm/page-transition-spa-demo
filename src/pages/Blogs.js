@@ -6,7 +6,8 @@ import enable_apd from '../img/enable_auto_detection_for_page_transitions.png';
 import large_img from '../img/10mb-example-jpg.jpg'
 import mpa_spa from '../img/mpa_spa.png';
 import title_as_page_name from '../img/title_as_page_name.png';
-import { useEffect } from 'react';
+
+// import { useEffect } from 'react';
 
 const data = [
   {
@@ -40,22 +41,22 @@ const data = [
 ]
 
 const Blogs = () => {
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      if (performance.getEntriesByName('routeChangeStart').length > 0) {
-        performance.mark('routeChangeEnd');
-        performance.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-        const [measure] = performance.getEntriesByName('PageTransition');
-        console.log(`Page transition took ${measure.duration.toFixed(2)} ms`);
+  // useEffect(() => {
+  //   requestAnimationFrame(() => {
+  //     if (performance.getEntriesByName('routeChangeStart').length > 0) {
+  //       performance.mark('routeChangeEnd');
+  //       performance.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+  //       const [measure] = performance.getEntriesByName('PageTransition');
+  //       console.log(`Page transition took ${measure.duration.toFixed(2)} ms`);
 
-        performance.clearMarks('routeChangeStart');
-        performance.clearMarks('routeChangeEnd');
-        performance.clearMeasures('PageTransition');
-      } else {
-        console.warn('routeChangeStart mark not found — skipping measure.');
-      }
-    });
-  }, []);
+  //       performance.clearMarks('routeChangeStart');
+  //       performance.clearMarks('routeChangeEnd');
+  //       performance.clearMeasures('PageTransition');
+  //     } else {
+  //       console.warn('routeChangeStart mark not found — skipping measure.');
+  //     }
+  //   });
+  // }, []);
 
   return (
     <div className="page-content">
