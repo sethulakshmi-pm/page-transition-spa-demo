@@ -3,6 +3,7 @@ import '../App.css';
 import { Helmet } from 'react-helmet';
 import apd_true from '../img/apd_true.png';
 import enable_apd from '../img/enable_auto_detection_for_page_transitions.png';
+import large_img from '../img/10mb-example-jpg.jpg'
 import mpa_spa from '../img/mpa_spa.png';
 import title_as_page_name from '../img/title_as_page_name.png';
 import { useEffect } from 'react';
@@ -64,6 +65,11 @@ const Blogs = () => {
       <h1 className="main-heading">Auto Page Transition Detection</h1>
       <br />
 
+      <img
+        src={large_img}
+        alt="Large_Img"
+        className="blog-image"
+      />
       {data.map(d => (
         <section className="blog-section">
           <h2 className="sub-heading">{d.subHeading}</h2>
