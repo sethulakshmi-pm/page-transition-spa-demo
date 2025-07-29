@@ -1,13 +1,13 @@
 import '../App.css';
 
+import { useEffect, useState } from 'react';
+
 import { Helmet } from 'react-helmet';
 import apd_true from '../img/apd_true.png';
 import enable_apd from '../img/enable_auto_detection_for_page_transitions.png';
 import large_img from '../img/10mb-example-jpg.jpg'
 import mpa_spa from '../img/mpa_spa.png';
 import title_as_page_name from '../img/title_as_page_name.png';
-
-// import { useEffect } from 'react';
 
 const data = [
   {
@@ -33,30 +33,40 @@ const data = [
   },
 {
   subHeading: 'Enable regex mapping',
-    // docHeading: `'By page title' & 'By page URL'`,
+    docHeading: `'By page title' & 'By page URL'`,
     desc: 'Creating regex mapping rules can transform URL patterns into meaningful names in the data that Instana collects about your website. Add mapping rules by specifying a regex pattern and the name you want to use for it.',
     imgSrc: title_as_page_name,
     imgSrc2: apd_true,
   }
 ]
 
-const Blogs = () => {
-  // useEffect(() => {
-  //   requestAnimationFrame(() => {
-  //     if (performance.getEntriesByName('routeChangeStart').length > 0) {
-  //       performance.mark('routeChangeEnd');
-  //       performance.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-  //       const [measure] = performance.getEntriesByName('PageTransition');
-  //       console.log(`Page transition took ${measure.duration.toFixed(2)} ms`);
+const delayTime = 5000;
 
-  //       performance.clearMarks('routeChangeStart');
-  //       performance.clearMarks('routeChangeEnd');
-  //       performance.clearMeasures('PageTransition');
-  //     } else {
-  //       console.warn('routeChangeStart mark not found — skipping measure.');
-  //     }
-  //   });
-  // }, []);
+const Blogs = () => {
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    let seconds = delayTime/1000;
+    console.log(`Routing to Blogs component. Starting ${delayTime / 1000} delay...`);
+
+    const interval = setInterval(() => {
+      console.log(`Routing delay: ${seconds} second${seconds !== 1 ? 's' : ''} remaining...`);
+      seconds--;
+    }, 1000);
+
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      console.log('Routing delay complete. Rendering Blogs component...');
+      setShowContent(true);
+    }, delayTime);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  if (!showContent) return null;
 
   return (
     <div className="page-content">
@@ -65,29 +75,26 @@ const Blogs = () => {
       </Helmet>
       <h1 className="main-heading">Auto Page Transition Detection</h1>
       <br />
-
-      <img
-        src={large_img}
-        alt="Large_Img"
-        className="blog-image"
-      />
-      {data.map(d => (
-        <section className="blog-section">
+      <img src={large_img} alt="Large_Img" className="blog-image" />
+      {data.map((d, index) => (
+        <section className="blog-section" key={index}>
           <h2 className="sub-heading">{d.subHeading}</h2>
           {d.docHeading && <h3>{d.docHeading}</h3>}
-          <p className="description">
-            {d.desc}
-          </p>
-          {d.imgSrc && <img
-            src={d.imgSrc}
-            alt="Application framework used by your website"
-            className="blog-image"
-          />}
-          {d.imgSrc2 && <img
-            src={d.imgSrc2}
-            alt="Application framework used by your website"
-            className="blog-image"
-          />}
+          <p className="description">{d.desc}</p>
+          {d.imgSrc && (
+            <img
+              src={d.imgSrc}
+              alt="Application framework used by your website"
+              className="blog-image"
+            />
+          )}
+          {d.imgSrc2 && (
+            <img
+              src={d.imgSrc2}
+              alt="Application framework used by your website"
+              className="blog-image"
+            />
+          )}
         </section>
       ))}
     </div>
