@@ -2978,7 +2978,7 @@
           _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
           measure = _performance$getEntri2[0];
         if (measure && true) {
-          info("JKG:: - Popstate transition duration: ".concat(measure.duration.toFixed(2), "ms"));
+          info("JKG:: - Popstate transition duration: ".concat(measure.duration, "ms"));
         }
       } catch (e) {
         error('Popstate timing measure failed', e);
@@ -3057,7 +3057,7 @@
               measure = _performance$getEntri4[0];
             if (measure) {
               if (true) {
-                info("JKG:: - Page transition duration: ".concat(measure.duration.toFixed(2), "ms"));
+                info("JKG:: - Page transition duration: ".concat(measure.duration, "ms"));
               }
 
               // You can attach this to your page metadata or emit an event here
