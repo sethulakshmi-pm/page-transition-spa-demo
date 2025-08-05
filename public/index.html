@@ -27,9 +27,14 @@
     ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
     ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
     ineum('trackSessions');
-    ineum('autoPageDetection', { titleAsPageName: true, trackTransitionDuration: true });
+    ineum('autoPageDetection', true);
   </script>
   <script defer crossorigin="anonymous" src="eum.debug.js"></script>
+
+  <!-- dynatrace script enabled. -->
+  <script type="text/javascript"
+    src="https://js-cdn.dynatrace.com/jstag/19343e753a3/bf79154jmw/fa4af4279695b411_complete.js"
+    crossorigin="anonymous"></script>
 
   <!-- 'page-transition-demo' - in release env -->
   <!-- <script>

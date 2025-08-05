@@ -2921,6 +2921,7 @@
     return typeof funk === 'function' && typeof funk.__original === 'function' && typeof funk.__unwrap === 'function' && funk.__wrapped === true;
   }
 
+  var pageTransitionStartTime = 0;
   function configAutoPageDetection() {
     resetPageDetectionState();
     if (!isAutoPageDetectionEnabled()) {
@@ -2942,8 +2943,6 @@
   }
   var isHashChangeListenerAdded = false;
   var isPopstateEventListenerAdded = false;
-  // Variable to track when page transitions start
-  var pageTransitionStartTime = 0;
   function resetPageDetectionState() {
     unwrapHistoryMethods();
     if (isHashChangeListenerAdded) {
@@ -2959,14 +2958,37 @@
     {
       info("hashchange to ".concat(event.newURL, " from ").concat(event.oldURL, ", current location ").concat(win.location));
     }
-    pageTransitionStartTime = performance$1.now();
     handlePossibleUrlChange(event.newURL);
   }
   function popStateEventListener(_event) {
     {
       info("popstate current location ".concat(win.location));
     }
-    pageTransitionStartTime = performance$1.now();
+    try {
+      performance.mark('routeChangeStart');
+      pageTransitionStartTime = performance.now();
+    } catch (e) {
+      error('Failed to mark popstate routeChangeStart', e);
+    }
+    requestAnimationFrame(function () {
+      try {
+        performance.mark('routeChangeEnd');
+        performance.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+        var _performance$getEntri = performance.getEntriesByName('PageTransition'),
+          _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
+          measure = _performance$getEntri2[0];
+        if (measure && true) {
+          info("JKG:: - Popstate transition duration: ".concat(measure.duration.toFixed(2), "ms"));
+        }
+      } catch (e) {
+        error('Popstate timing measure failed', e);
+      } finally {
+        performance.clearMarks('routeChangeStart');
+        performance.clearMarks('routeChangeEnd');
+        performance.clearMeasures('PageTransition');
+        pageTransitionStartTime = 0;
+      }
+    });
     handlePossibleUrlChange(window.location.pathname);
   }
 
@@ -3011,8 +3033,58 @@
         {
           debug("history ".concat(methodName, " invoked with"), args);
         }
+
+        // 💡 Start measuring transition
+        try {
+          performance.mark('routeChangeStart');
+          pageTransitionStartTime = performance.now();
+        } catch (e) {
+          {
+            error('Failed to mark routeChangeStart', e);
+          }
+        }
+
+        // Execute original method
+        var result = original.apply(this, args);
+
+        // Wait for the next frame to simulate "route rendered"
+        requestAnimationFrame(function () {
+          try {
+            performance.mark('routeChangeEnd');
+            performance.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+            var _performance$getEntri3 = performance.getEntriesByName('PageTransition'),
+              _performance$getEntri4 = _slicedToArray(_performance$getEntri3, 1),
+              measure = _performance$getEntri4[0];
+            if (measure) {
+              if (true) {
+                info("JKG:: - Page transition duration: ".concat(measure.duration.toFixed(2), "ms"));
+              }
+
+              // You can attach this to your page metadata or emit an event here
+              var duration = measure.duration.toFixed(2);
+              // Optionally send to `setPage()` or analytics here
+
+              // Example (only if it makes sense for your lib):
+              // setPage(customizedPageName, { 'view.transition.duration': duration });
+            }
+          } catch (e) {
+            {
+              error('Failed to measure page transition', e);
+            }
+          } finally {
+            // Clean up to avoid buildup
+            performance.clearMarks('routeChangeStart');
+            performance.clearMarks('routeChangeEnd');
+            performance.clearMeasures('PageTransition');
+
+            // Reset transition start time
+            pageTransitionStartTime = 0;
+          }
+        });
+
+        // ⚠️ Still update your location
         updateLocation(args);
-        return original.apply(this, args);
+        return result;
       };
     };
   }
@@ -3028,7 +3100,6 @@
     // pushState: Observation is argument length is always 3.
     var newUrl = args.length > 2 ? args[2] : null;
     if (newUrl) {
-      pageTransitionStartTime = performance$1.now();
       handlePossibleUrlChange(String(newUrl));
     }
   }
@@ -3038,36 +3109,10 @@
     if (!customizedPageName) {
       return;
     }
-    var meta = {
+    setPage(customizedPageName, {
       'view.title': doc.title,
       'view.url': stripSecrets(normalizedUrl)
-    };
-
-    // Only track transition duration if the feature is enabled
-    if (trackTransitionDurationInAutoPageDetection() && pageTransitionStartTime > 0) {
-      var transitionDuration = performance$1.now() - pageTransitionStartTime;
-      if (performance$1.getEntriesByName('routeChangeStart').length > 0) {
-        performance$1.mark('routeChangeEnd');
-        performance$1.measure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-        var _performance$getEntri = performance$1.getEntriesByName('PageTransition'),
-          _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
-          measure = _performance$getEntri2[0];
-        console.log("Page transition took WWWWWWW ".concat(measure.duration.toFixed(2), " ms"));
-        performance$1.clearMarks('routeChangeStart');
-        performance$1.clearMarks('routeChangeEnd');
-        performance$1.clearMeasures('PageTransition');
-      } else {
-        console.warn('routeChangeStart mark not found — skipping measure.');
-      }
-      {
-        info("Page transition duration: ".concat(transitionDuration, "ms"));
-      }
-      meta['view.transition.duration'] = String(transitionDuration);
-    }
-    setPage(customizedPageName, meta);
-
-    // Reset the start time for next transition
-    pageTransitionStartTime = 0;
+    });
   }
   function applyCustomPageMappings(urlPath) {
     var rules = getAutoPageDetectionMappingRule();
@@ -3112,20 +3157,14 @@
     var _vars$autoPageDetecti2;
     return _typeof(defaultVars.autoPageDetection) === 'object' && !!((_vars$autoPageDetecti2 = defaultVars.autoPageDetection) !== null && _vars$autoPageDetecti2 !== void 0 && _vars$autoPageDetecti2.titleAsPageName);
   }
-  function trackTransitionDurationInAutoPageDetection() {
-    var _vars$autoPageDetecti3;
-    console.log('APFSFDF');
-    return _typeof(defaultVars.autoPageDetection) === 'object' && !!((_vars$autoPageDetecti3 = defaultVars.autoPageDetection) !== null && _vars$autoPageDetecti3 !== void 0 && _vars$autoPageDetecti3.trackTransitionDuration);
-  }
   function getAutoPageDetectionMappingRule() {
-    var _vars$autoPageDetecti4;
-    if (_typeof(defaultVars.autoPageDetection) !== 'object' || !((_vars$autoPageDetecti4 = defaultVars.autoPageDetection) !== null && _vars$autoPageDetecti4 !== void 0 && _vars$autoPageDetecti4.mappingRule)) {
+    var _vars$autoPageDetecti3;
+    if (_typeof(defaultVars.autoPageDetection) !== 'object' || !((_vars$autoPageDetecti3 = defaultVars.autoPageDetection) !== null && _vars$autoPageDetecti3 !== void 0 && _vars$autoPageDetecti3.mappingRule)) {
       return [];
     }
     return defaultVars.autoPageDetection.mappingRule;
   }
   function processAutoPageDetectionCommand(input) {
-    console.log('processAutoPageDetectionCommand---');
     var guessCmd = input;
     if (!guessCmd) {
       return false;
@@ -3136,8 +3175,7 @@
     return {
       ignorePopstateEvent: guessCmd['ignorePopstateEvent'],
       titleAsPageName: guessCmd['titleAsPageName'],
-      mappingRule: guessCmd['mappingRule'],
-      trackTransitionDuration: guessCmd['trackTransitionDuration']
+      mappingRule: guessCmd['mappingRule']
     };
   }
 
