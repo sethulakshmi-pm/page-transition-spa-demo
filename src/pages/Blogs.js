@@ -1,13 +1,14 @@
 import '../App.css';
 
-import { useEffect, useState } from 'react';
-
 import { Helmet } from 'react-helmet';
 import apd_true from '../img/apd_true.png';
 import enable_apd from '../img/enable_auto_detection_for_page_transitions.png';
 import large_img from '../img/10mb-example-jpg.jpg'
 import mpa_spa from '../img/mpa_spa.png';
 import title_as_page_name from '../img/title_as_page_name.png';
+
+// import { useEffect, useState } from 'react';
+
 
 const data = [
   {
@@ -40,33 +41,33 @@ const data = [
   }
 ]
 
-const delayTime = 5000;
+// const delayTime = 50;
 
 const Blogs = () => {
-  const [showContent, setShowContent] = useState(false);
+  // const [showContent, setShowContent] = useState(false);
 
-  useEffect(() => {
-    let seconds = delayTime/1000;
-    console.log(`Routing to Blogs component. Starting ${delayTime / 1000} delay...`);
+  // useEffect(() => {
+  //   let seconds = delayTime/1000;
+  //   // console.log(`Routing to Blogs component. Starting ${delayTime / 1000} delay...`);
 
-    const interval = setInterval(() => {
-      console.log(`Routing delay: ${seconds} second${seconds !== 1 ? 's' : ''} remaining...`);
-      seconds--;
-    }, 1000);
+  //   const interval = setInterval(() => {
+  //     // console.log(`Routing delay: ${seconds} second${seconds !== 1 ? 's' : ''} remaining...`);
+  //     seconds--;
+  //   }, 10);
 
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      console.log('Routing delay complete. Rendering Blogs component...');
-      setShowContent(true);
-    }, delayTime);
+  //   const timeout = setTimeout(() => {
+  //     clearInterval(interval);
+  //     // console.log('Routing delay complete. Rendering Blogs component...');
+  //     setShowContent(true);
+  //   }, delayTime);
 
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, []);
+  //   return () => {
+  //     clearInterval(interval);
+  //     clearTimeout(timeout);
+  //   };
+  // }, []);
 
-  if (!showContent) return null;
+  // if (!showContent) return null;
 
   return (
     <div className="page-content">

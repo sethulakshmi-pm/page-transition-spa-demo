@@ -302,8 +302,6 @@
     reportingBackends: [],
     agentVersion: '0.0.0',
     //0.0.0 will be replaced with version from package.json
-    pageTransitionData: {},
-    // Initialize with empty object
     webvitalsInCustomEvent: false
   };
 
@@ -2815,28 +2813,6 @@
     return true;
   }
 
-  // Define the structure for page transition data
-
-  // Add page transition data to the global vars object
-
-  // Initialize the pageTransitionData property in vars
-  defaultVars.pageTransitionData = {};
-
-  // Function to set page transition data
-  function setPageTransitionData(data) {
-    defaultVars.pageTransitionData = data;
-  }
-
-  // Function to get page transition data
-  function getPageTransitionData() {
-    return defaultVars.pageTransitionData || {};
-  }
-
-  // Function to clear page transition data
-  function clearPageTransitionData() {
-    defaultVars.pageTransitionData = {};
-  }
-
   var isExcessiveUsage$4 = createExcessiveUsageIdentifier({
     maxCallsPerTenMinutes: 128,
     maxCallsPerTenSeconds: 32
@@ -2862,25 +2838,10 @@
       'ty': 'pc',
       'ts': now()
     };
-
-    // Add page transition data to the beacon if available
-    var transitionData = getPageTransitionData();
-    if (transitionData.d !== undefined) {
-      beacon['d'] = transitionData.d;
-    }
-    if (transitionData.pct !== undefined) {
-      beacon['pct'] = transitionData.pct;
-    }
-    if (transitionData.pce !== undefined) {
-      beacon['pce'] = transitionData.pce;
-    }
     addCommonBeaconProperties(beacon);
     if (internalMeta) {
       addInternalMetaDataToBeacon(beacon, internalMeta);
     }
-
-    // Clear the transition data after using it
-    clearPageTransitionData();
     sendBeacon$3(beacon);
   }
 
@@ -3061,10 +3022,27 @@
       // Store the total duration for the beacon
       transitionData.totalDuration = totalDuration;
 
-      // If there's a pending page change, trigger it now that we have the duration
+      // If there's a pending page change, complete it now with the duration
       if (transitionData.pendingPageChange) {
-        // Just trigger the handlePossibleUrlChange again now that we have the duration
-        handlePossibleUrlChange(transitionData.pendingPageChange.url);
+        var customizedPageName = transitionData.pendingPageChange.customizedPageName;
+
+        // Create beacon with timing data
+        var beacon = {
+          'view.title': doc.title,
+          'view.url': stripSecrets(normalizeUrl(transitionData.pendingPageChange.url, true)),
+          'duration': totalDuration // Set the duration for the beacon
+        };
+
+        // Add timestamp and event type to the beacon if available
+        if (transitionData.timestamp) {
+          beacon['pageChangeTimestamp'] = transitionData.timestamp;
+          if (transitionData.eventType) {
+            beacon['pageChangeEventType'] = transitionData.eventType;
+          }
+        }
+
+        // Send the page change beacon with the duration
+        setPage(customizedPageName, beacon);
 
         // Clear the pending page change
         transitionData.pendingPageChange = undefined;
@@ -3292,23 +3270,23 @@
 
     // If we already have the total duration, we can send the beacon immediately
     if (transitionData.totalDuration !== undefined) {
-      // Create internal meta data for setPage
-      var internalMeta = {
+      // Create beacon with timing data
+      var beacon = {
         'view.title': doc.title,
-        'view.url': stripSecrets(normalizedUrl)
+        'view.url': stripSecrets(normalizedUrl),
+        'duration': transitionData.totalDuration
       };
 
-      // Store the duration and other properties to be added to the beacon
-      // These will be picked up by reportPageChange in pageChange.ts
-      setPageTransitionData({
-        d: transitionData.totalDuration,
-        pct: transitionData.timestamp,
-        pce: transitionData.eventType
-      });
-      console.log('Sending page change with duration:', transitionData.totalDuration);
+      // Add timestamp and event type to the beacon if available
+      if (transitionData.timestamp) {
+        beacon['pageChangeTimestamp'] = transitionData.timestamp;
+        if (transitionData.eventType) {
+          beacon['pageChangeEventType'] = transitionData.eventType;
+        }
+      }
 
-      // Send the page change beacon with the internal meta
-      setPage(customizedPageName, internalMeta);
+      // Send the page change beacon with the duration
+      setPage(customizedPageName, beacon);
 
       // Reset total duration after use
       transitionData.totalDuration = undefined;
