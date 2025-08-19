@@ -3103,8 +3103,8 @@
         // console.log('entry.initiatorType', entry.initiatorType);
         return ['fetch', 'xmlhttprequest', 'script', 'img', 'link'].includes(entry.initiatorType);
       },
-      maxWaitForResourceMillis: 2000,
-      maxToleranceForResourceTimingsMillis: 100,
+      maxWaitForResourceMillis: 3000,
+      maxToleranceForResourceTimingsMillis: 800,
       onEnd: function onEnd(_ref) {
         var resource = _ref.resource,
           duration = _ref.duration;
