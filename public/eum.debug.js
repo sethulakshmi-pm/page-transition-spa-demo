@@ -1394,6 +1394,9 @@
         info('Tracking request url excluding query parameters and fragment strings', data['u']);
       }
     }
+    {
+      info('Transmitting beacon', data);
+    }
     if (isExcessiveUsage() && data['ty'] != 'pl') {
       {
         info('Reached the maximum number of beacons to transmit.');
@@ -1674,7 +1677,7 @@
       if ('PerformanceObserver' in window) {
         var paintObs = new PerformanceObserver(function (list) {
           list.getEntries().forEach(function (entry) {
-            // console.log('entry', entry);
+            //console.log('entry', entry);
             if (entry.name === 'first-contentful-paint'); else if (entry.name === 'largest-contentful-paint');
           });
         });
@@ -1792,20 +1795,6 @@
   function isWaitingAcceptable() {
     return doc.visibilityState === 'visible' || doc.visibilityState === 'prerender';
   }
-  // function safeMeasure(name: string, startMark: string, endMark: string) {
-  //   const hasStart = performance.getEntriesByName(startMark).length > 0;
-  //   const hasEnd = performance.getEntriesByName(endMark).length > 0;
-
-  //   if (hasStart && hasEnd) {
-  //     performance.measure(name, startMark, endMark);
-  //     return performance.getEntriesByName(name)[0]?.duration ?? null;
-  //   } else {
-  //     if (true) {
-  //       error(`Missing marks for measure "${name}":`, { hasStart, hasEnd });
-  //     }
-  //     return null;
-  //   }
-  // }
 
   function isAllowedOrigin(url) {
     return matchesAny(defaultVars.allowedOrigins, url);
@@ -3082,12 +3071,10 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
-    console.log('JKG:: start - startResourceObservation');
     if (activeResourceObserver) {
       var _activeResourceObserv, _activeResourceObserv2;
       (_activeResourceObserv = (_activeResourceObserv2 = activeResourceObserver).cancel) === null || _activeResourceObserv === void 0 || _activeResourceObserv.call(_activeResourceObserv2);
     }
-    console.log('JKG:: End - startResourceObservation');
     activeResourceObserver = observeResourcePerformance({
       entryTypes: ['resource'],
       resourceMatcher: function resourceMatcher(entry) {
@@ -3100,12 +3087,14 @@
         var resource = _ref.resource,
           duration = _ref.duration;
         var resourceDuration = parseFloat(duration.toFixed(2));
-        console.log("JKG:: try 1 - SPA resource loading took ".concat(resourceDuration, "ms"));
         if (resource) {
-          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, ", it took ").concat(resourceDuration, "ms to load"));
+          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
           // Store resource duration and calculate total if transition duration is available
           transitionData.resourceDuration = resourceDuration;
+          transitionData.resourceUrl = resource.name;
           calculateTotalTransitionTime();
+        } else {
+          console.log("JKG:: this is with no resource time");
         }
       }
     });
@@ -3173,7 +3162,7 @@
 
             // Store transition duration and calculate total if resource duration is available
             transitionData.transitionDuration = duration;
-            calculateTotalTransitionTime();
+            //calculateTotalTransitionTime();
           }
 
           // ✅ Measure paint-related timings
@@ -3181,9 +3170,9 @@
             var paintObserver = new PerformanceObserver(function (list) {
               list.getEntries().forEach(function (entry) {
                 if (entry.name === 'first-paint') {
-                  console.log("\uD83C\uDFA8 First Paint: ".concat(entry.startTime.toFixed(2), "ms"));
+                  //console.log(`🎨 First Paint: ${entry.startTime.toFixed(2)}ms`);
                 } else if (entry.name === 'first-contentful-paint') {
-                  console.log("\uD83D\uDDBC First Contentful Paint: ".concat(entry.startTime.toFixed(2), "ms"));
+                  //console.log(`🖼 First Contentful Paint: ${entry.startTime.toFixed(2)}ms`);
                 }
               });
             });
@@ -3300,7 +3289,6 @@
 
       // Send the page change beacon with the internal meta
       setPage(customizedPageName, internalMeta);
-
       // Reset total duration after use
       transitionData.totalDuration = undefined;
     } else {
