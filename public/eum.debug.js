@@ -1394,9 +1394,6 @@
         info('Tracking request url excluding query parameters and fragment strings', data['u']);
       }
     }
-    {
-      info('Transmitting beacon', data);
-    }
     if (isExcessiveUsage() && data['ty'] != 'pl') {
       {
         info('Reached the maximum number of beacons to transmit.');
@@ -3282,8 +3279,7 @@
       // These will be picked up by reportPageChange in pageChange.ts
       setPageTransitionData({
         d: transitionData.totalDuration,
-        pct: transitionData.timestamp,
-        pce: transitionData.eventType
+        rul: transitionData.resourceUrl
       });
       console.log('Sending page change with duration:', transitionData.totalDuration);
 
