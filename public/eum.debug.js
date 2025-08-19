@@ -3093,10 +3093,12 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
+    console.log('JKG:: start - startResourceObservation');
     if (activeResourceObserver) {
       var _activeResourceObserv, _activeResourceObserv2;
       (_activeResourceObserv = (_activeResourceObserv2 = activeResourceObserver).cancel) === null || _activeResourceObserv === void 0 || _activeResourceObserv.call(_activeResourceObserv2);
     }
+    console.log('JKG:: End - startResourceObservation');
     activeResourceObserver = observeResourcePerformance({
       entryTypes: ['resource'],
       resourceMatcher: function resourceMatcher(entry) {
@@ -3109,9 +3111,9 @@
         var resource = _ref.resource,
           duration = _ref.duration;
         var resourceDuration = parseFloat(duration.toFixed(2));
-        console.log("JKG:: try 1 - SPA transition took ".concat(resourceDuration, "ms"));
+        console.log("JKG:: try 1 - SPA resource loading took ".concat(resourceDuration, "ms"));
         if (resource) {
-          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name));
+          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, ", it took ").concat(resourceDuration, "ms to load"));
           // Store resource duration and calculate total if transition duration is available
           transitionData.resourceDuration = resourceDuration;
           calculateTotalTransitionTime();
