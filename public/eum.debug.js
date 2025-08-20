@@ -2817,11 +2817,12 @@
     maxCallsPerTenSeconds: 32
   });
   function setPage(page, internalMeta) {
-    console.log('SETHU@#@#@-setPage', page, internalMeta);
     var previousPage = defaultVars.page;
     defaultVars.page = page;
     var isInitialPageDefinition = getActivePhase() === pageLoad && previousPage == null;
     if (!isInitialPageDefinition && previousPage !== page) {
+      console.log('Sending page change with duration:', internalMeta === null || internalMeta === void 0 ? void 0 : internalMeta['view.transition.duration']);
+      console.log('Sending page change with duration:');
       if (isExcessiveUsage$4()) {
         {
           info('Reached the maximum number of page changes to monitor.');
@@ -2843,11 +2844,8 @@
     if (transitionData.d !== undefined) {
       beacon['d'] = transitionData.d;
     }
-    if (transitionData.pct !== undefined) {
-      beacon['pct'] = transitionData.pct;
-    }
-    if (transitionData.pce !== undefined) {
-      beacon['pce'] = transitionData.pce;
+    if (transitionData.rul !== undefined) {
+      beacon['rul'] = transitionData.rul;
     }
     addCommonBeaconProperties(beacon);
     if (internalMeta) {
@@ -3036,15 +3034,21 @@
       // Store the total duration for the beacon
       transitionData.totalDuration = totalDuration;
 
-      // If there's a pending page change, trigger it now that we have the duration
-      if (transitionData.pendingPageChange) {
-        // Just trigger the handlePossibleUrlChange again now that we have the duration
-        handlePossibleUrlChange(transitionData.pendingPageChange.url);
+      // // If there's a pending page change, trigger it now that we have the duration
+      // if (transitionData.pendingPageChange) {
+      //   // Just trigger the handlePossibleUrlChange again now that we have the duration
+      //   handlePossibleUrlChange(transitionData.pendingPageChange.url);
 
-        // Clear the pending page change
+      //   // Clear the pending page change
+      //   transitionData.pendingPageChange = undefined;
+      // }
+      if (transitionData.pendingPageChange) {
+        var _transitionData$pendi = transitionData.pendingPageChange,
+          url = _transitionData$pendi.url,
+          customizedPageName = _transitionData$pendi.customizedPageName;
+        setPageWithConditions(url, customizedPageName, url);
         transitionData.pendingPageChange = undefined;
       }
-
       // Reset duration data after calculation
       transitionData.resourceDuration = undefined;
       transitionData.transitionDuration = undefined;
@@ -3068,6 +3072,8 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
+    console.log("JKG:: startResourceObservation");
+    transitionData.state = 'wait';
     if (activeResourceObserver) {
       var _activeResourceObserv, _activeResourceObserv2;
       (_activeResourceObserv = (_activeResourceObserv2 = activeResourceObserver).cancel) === null || _activeResourceObserv === void 0 || _activeResourceObserv.call(_activeResourceObserv2);
@@ -3086,18 +3092,21 @@
         var resourceDuration = parseFloat(duration.toFixed(2));
         if (resource) {
           console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
-          // Store resource duration and calculate total if transition duration is available
           transitionData.resourceDuration = resourceDuration;
           transitionData.resourceUrl = resource.name;
-          calculateTotalTransitionTime();
         } else {
           console.log("JKG:: this is with no resource time");
         }
+        // Either way, try to complete
+        calculateTotalTransitionTime();
+        transitionData.state = 'done';
       }
     });
     activeResourceObserver.onBeforeResourceRetrieval();
   }
   function endResourceObservation() {
+    console.log("JKG:: endResourceObservation");
+    transitionData.state = 'done';
     if (activeResourceObserver) {
       activeResourceObserver.onAfterResourceRetrieved();
     }
@@ -3160,6 +3169,7 @@
             // Store transition duration and calculate total if resource duration is available
             transitionData.transitionDuration = duration;
             //calculateTotalTransitionTime();
+            maybeCompletePageTransition();
           }
 
           // ✅ Measure paint-related timings
@@ -3257,7 +3267,6 @@
     if (!transitionData.timestamp) {
       transitionData.timestamp = Date.now();
     }
-
     // Only set event type if not already set or if it's a hashchange
     if (!transitionData.eventType || newUrl.includes('#')) {
       transitionData.eventType = newUrl.includes('#') ? 'hashchange' : transitionData.eventType || 'navigation';
@@ -3266,15 +3275,17 @@
     var normalizedUrl = normalizeUrl(newUrl, true);
     var customizedPageName = applyCustomPageMappings(removeUrlOrigin(normalizedUrl));
     if (!customizedPageName) return;
-
+    setPageWithConditions(normalizedUrl, customizedPageName, newUrl);
+  }
+  function setPageWithConditions(normalizedUrl, customizedPageName, newUrl) {
+    console.log("Reached set page caller !!");
     // If we already have the total duration, we can send the beacon immediately
     if (transitionData.totalDuration !== undefined) {
-      // Create internal meta data for setPage
+      //Create internal meta data for setPage
       var internalMeta = {
         'view.title': doc.title,
         'view.url': stripSecrets(normalizedUrl)
       };
-
       // Store the duration and other properties to be added to the beacon
       // These will be picked up by reportPageChange in pageChange.ts
       setPageTransitionData({
@@ -3282,19 +3293,19 @@
         rul: transitionData.resourceUrl
       });
       console.log('Sending page change with duration:', transitionData.totalDuration);
-
-      // Send the page change beacon with the internal meta
       setPage(customizedPageName, internalMeta);
-      // Reset total duration after use
       transitionData.totalDuration = undefined;
+      transitionData.resourceUrl = undefined;
+
+      // Reset total duration after use
     } else {
       // Store the page change information to be processed when we have the duration
       transitionData.pendingPageChange = {
         url: newUrl,
         customizedPageName: customizedPageName
       };
-      console.log('Page change pending until duration is calculated');
     }
+    console.log('Page change pending until duration is calculated');
   }
   function applyCustomPageMappings(urlPath) {
     var rules = getAutoPageDetectionMappingRule();
@@ -3346,6 +3357,11 @@
       titleAsPageName: guessCmd['titleAsPageName'],
       mappingRule: guessCmd['mappingRule']
     };
+  }
+  function maybeCompletePageTransition() {
+    if (transitionData.transitionDuration !== undefined && transitionData.pendingPageChange) {
+      calculateTotalTransitionTime(); // This will internally call `handlePossibleUrlChange` again
+    }
   }
 
   function processCommand(command) {
@@ -3651,9 +3667,6 @@
       }
       if (typeof globalObject['v'] === 'number') {
         var version = String(Math.round(globalObject['v']));
-        {
-          info('Identified version of snippet to be:', version);
-        }
         defaultVars.trackingSnippetVersion = version;
       }
 

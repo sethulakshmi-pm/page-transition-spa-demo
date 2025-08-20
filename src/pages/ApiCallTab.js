@@ -12,9 +12,9 @@ const ApiCallTab = () => {
     // Fetching data from the API
     const fetchCoffeeData = async () => {
       try {
-        console.log('USEEFFECT%$%%$--BEFORE', Date.now())
+        console.log('ApiCallTab--fetch--BEFORE', Date.now())
         const response = await fetch('https://api.sampleapis.com/coffee/hot');
-        console.log('USEEFFECT%$%%$--AFTER', response, Date.now())
+        console.log('ApiCallTab--fetch--AFTER', response, Date.now())
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
