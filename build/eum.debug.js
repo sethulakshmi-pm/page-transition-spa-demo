@@ -3667,9 +3667,6 @@
       }
       if (typeof globalObject['v'] === 'number') {
         var version = String(Math.round(globalObject['v']));
-        {
-          info('Identified version of snippet to be:', version);
-        }
         defaultVars.trackingSnippetVersion = version;
       }
 
