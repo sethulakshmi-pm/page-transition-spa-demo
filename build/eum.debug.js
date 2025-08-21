@@ -91,11 +91,11 @@
     return false;
   }
 
-  var log =  createLogger('log') ;
-  var info =  createLogger('info') ;
-  var warn =  createLogger('warn') ;
-  var error =  createLogger('error') ;
-  var debug =  createLogger('debug') ;
+  var log = createLogger('log');
+  var info = createLogger('info');
+  var warn = createLogger('warn');
+  var error = createLogger('error');
+  var debug = createLogger('debug');
   function createLogger(method) {
     if (typeof console === 'undefined' || typeof console.log !== 'function' || typeof console.log.apply !== 'function') {
       return noop;
@@ -133,7 +133,7 @@
   // If the globals don't exist at execution time of this file, then we know that the globals stored
   // above are not wrapped by Zone.js. This in turn can mean better performance for Angular users.
   var isRunningZoneJs = win['Zone'] != null && win['Zone']['root'] != null && typeof win['Zone']['root']['run'] === 'function';
-  if ( isRunningZoneJs) {
+  if (isRunningZoneJs) {
     info('Discovered Zone.js globals. Will attempt to register all timers inside the root Zone.');
   }
   function setTimeout$1() {
@@ -302,6 +302,8 @@
     reportingBackends: [],
     agentVersion: '0.0.0',
     //0.0.0 will be replaced with version from package.json
+    pageTransitionData: {},
+    // Initialize with empty object
     webvitalsInCustomEvent: false
   };
 
@@ -335,7 +337,7 @@
       if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) {
         t && (r = t);
         var n = 0,
-          F = function () {};
+          F = function () { };
         return {
           s: F,
           n: function () {
@@ -709,8 +711,8 @@
     // caching and resource sizes.
     var isCached = false;
     if (typeof entry['transferSize'] === 'number' && typeof entry['encodedBodySize'] === 'number' &&
-    // All this information may not be available due to the timing allow origin check.
-    entry['encodedBodySize'] > 0) {
+      // All this information may not be available due to the timing allow origin check.
+      entry['encodedBodySize'] > 0) {
       if (entry['transferSize'] === 0) {
         result.push(cachingTypes.cached);
         isCached = true;
@@ -742,8 +744,8 @@
       result.push('');
     }
     var hasValidTimings = entry['responseStart'] != null &&
-    // timing allow origin check may have failed
-    entry['responseStart'] >= entry['fetchStart'];
+      // timing allow origin check may have failed
+      entry['responseStart'] >= entry['fetchStart'];
     if (hasValidTimings) {
       result.push(calculateTiming(entry['redirectEnd'], entry['redirectStart']));
       result.push(calculateTiming(entry['domainLookupStart'], entry['fetchStart']));
@@ -794,14 +796,14 @@
   }
   function serializeEntry(entry) {
     return serializeEntryToArray(entry).join(',')
-    // remove empty trailing timings
-    .replace(/,+$/, '');
+      // remove empty trailing timings
+      .replace(/,+$/, '');
   }
   function calculateTiming(a, b) {
     if (a == null || b == null ||
-    // the values being equal indicates for example that a network connection didn't need
-    // to be established. Do not report a timing of '0' as this will skew the statistics.
-    a === b) {
+      // the values being equal indicates for example that a network connection didn't need
+      // to be established. Do not report a timing of '0' as this will skew the statistics.
+      a === b) {
       return '';
     }
     var diff = Math.round(a - b);
@@ -943,9 +945,9 @@
       var lowerCaseUrl = url.toLowerCase();
       var initiatorType = entry['initiatorType'];
       if (lowerCaseUrl === 'about:blank' || lowerCaseUrl.indexOf('javascript:') === 0 ||
-      // some iframe cases
-      // Data transmission can be visible as a resource. Do not report it.
-      isTransmitionRequest(url)) {
+        // some iframe cases
+        // Data transmission can be visible as a resource. Do not report it.
+        isTransmitionRequest(url)) {
         continue;
       }
       if (url.length > urlMaxLength) {
@@ -1012,13 +1014,13 @@
     beacon['t_dns'] = timing.domainLookupEnd - timing.domainLookupStart;
     if (timing.connectStart > 0 && timing.connectEnd > 0) {
       if (timing.secureConnectionStart != null && timing.secureConnectionStart > 0 &&
-      // Issue in the navigation timing spec: Secure connection start does not take
-      // connection reuse into consideration. At the time of writing (2020-07-11)
-      // the latest W3C Navigation Timing recommendation still contains this issue.
-      // The latest editor draft has these fixed (by linking to the resource timing
-      // spec instead of duplicating the information).
-      // For now a workaround to avoid these wrong timings seems to be the following.
-      timing.secureConnectionStart >= timing.connectStart) {
+        // Issue in the navigation timing spec: Secure connection start does not take
+        // connection reuse into consideration. At the time of writing (2020-07-11)
+        // the latest W3C Navigation Timing recommendation still contains this issue.
+        // The latest editor draft has these fixed (by linking to the resource timing
+        // spec instead of duplicating the information).
+        // For now a workaround to avoid these wrong timings seems to be the following.
+        timing.secureConnectionStart >= timing.connectStart) {
         beacon['t_tcp'] = timing.secureConnectionStart - timing.connectStart;
         beacon['t_ssl'] = timing.connectEnd - timing.secureConnectionStart;
       } else {
@@ -1392,9 +1394,6 @@
         info('Tracking request url excluding query parameters and fragment strings', data['u']);
       }
     }
-    {
-      info('Transmitting beacon', data);
-    }
     if (isExcessiveUsage() && data['ty'] != 'pl') {
       {
         info('Reached the maximum number of beacons to transmit.');
@@ -1641,7 +1640,7 @@
       cancel: disposeGlobalResources
     };
     function onBeforeResourceRetrieval() {
-      performance$1.mark('routeChangeStart');
+      //performance.mark('routeChangeStart');
       startTime = performance$1.now();
       try {
         observer = new win['PerformanceObserver'](onResource);
@@ -1670,16 +1669,13 @@
         addEventListener$1(doc, 'visibilitychange', onVisibilityChanged);
         fallbackNoResourceFoundTimerHandle = setTimeout$1(end, opts.maxWaitForResourceMillis);
       }
-      performance$1.mark('routeChangeEnd');
+
+      //performance.mark('routeChangeEnd');
       if ('PerformanceObserver' in window) {
         var paintObs = new PerformanceObserver(function (list) {
           list.getEntries().forEach(function (entry) {
-            console.log('entry', entry);
-            if (entry.name === 'first-contentful-paint') {
-              console.log("FCP after route change: ".concat(entry.startTime - startTime, "ms"));
-            } else if (entry.name === 'largest-contentful-paint') {
-              console.log("LCP after route change: ".concat(entry.startTime - startTime, "ms"));
-            }
+            //console.log('entry', entry);
+            if (entry.name === 'first-contentful-paint'); else if (entry.name === 'largest-contentful-paint');
           });
         });
         try {
@@ -1691,25 +1687,23 @@
             type: 'largest-contentful-paint',
             buffered: true
           });
-        } catch (e) {/* empty */}
+        } catch (e) {/* empty */ }
       }
-      safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-      var _performance$getEntri = performance$1.getEntriesByName('PageTransition'),
-        _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
-        measure = _performance$getEntri2[0];
-      if (measure) {
-        console.log("JKG1111:: Page transition duration: ".concat(measure.duration.toFixed(2), "ms"));
-      }
+      //safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+      // const [measure] = performance.getEntriesByName('PageTransition');
+      // if (measure) {
+      //   console.log(`JKG1111:: Page transition duration: ${measure.duration.toFixed(2)}ms`);
+      // }
     }
     function end() {
       disposeGlobalResources();
       var duration;
       if (resource && resource.duration != null &&
-      // In some old web browsers, e.g. Chrome 31, the value provided as the duration
-      // can be very wrong. We have seen cases where this value is measured in years.
-      // If this does seem be the case, then we will ignore the duration property and
-      // instead prefer our approximation.
-      resource.duration < ONE_DAY_IN_MILLIS) {
+        // In some old web browsers, e.g. Chrome 31, the value provided as the duration
+        // can be very wrong. We have seen cases where this value is measured in years.
+        // If this does seem be the case, then we will ignore the duration property and
+        // instead prefer our approximation.
+        resource.duration < ONE_DAY_IN_MILLIS) {
         duration = Math.round(resource.duration);
       } else {
         duration = Math.round(endTime - startTime);
@@ -1797,23 +1791,6 @@
   // is in the process of being disposed.
   function isWaitingAcceptable() {
     return doc.visibilityState === 'visible' || doc.visibilityState === 'prerender';
-  }
-  function safeMeasure(name, startMark, endMark) {
-    var hasStart = performance$1.getEntriesByName(startMark).length > 0;
-    var hasEnd = performance$1.getEntriesByName(endMark).length > 0;
-    if (hasStart && hasEnd) {
-      var _performance$getEntri3, _performance$getEntri4;
-      performance$1.measure(name, startMark, endMark);
-      return (_performance$getEntri3 = (_performance$getEntri4 = performance$1.getEntriesByName(name)[0]) === null || _performance$getEntri4 === void 0 ? void 0 : _performance$getEntri4.duration) !== null && _performance$getEntri3 !== void 0 ? _performance$getEntri3 : null;
-    } else {
-      {
-        error("Missing marks for measure \"".concat(name, "\":"), {
-          hasStart: hasStart,
-          hasEnd: hasEnd
-        });
-      }
-      return null;
-    }
   }
 
   function isAllowedOrigin(url) {
@@ -2459,82 +2436,82 @@
   var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
   function toObject(val) {
-  	if (val === null || val === undefined) {
-  		throw new TypeError('Object.assign cannot be called with null or undefined');
-  	}
+    if (val === null || val === undefined) {
+      throw new TypeError('Object.assign cannot be called with null or undefined');
+    }
 
-  	return Object(val);
+    return Object(val);
   }
 
   function shouldUseNative() {
-  	try {
-  		if (!Object.assign) {
-  			return false;
-  		}
+    try {
+      if (!Object.assign) {
+        return false;
+      }
 
-  		// Detect buggy property enumeration order in older V8 versions.
+      // Detect buggy property enumeration order in older V8 versions.
 
-  		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
-  		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
-  		test1[5] = 'de';
-  		if (Object.getOwnPropertyNames(test1)[0] === '5') {
-  			return false;
-  		}
+      // https://bugs.chromium.org/p/v8/issues/detail?id=4118
+      var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
+      test1[5] = 'de';
+      if (Object.getOwnPropertyNames(test1)[0] === '5') {
+        return false;
+      }
 
-  		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-  		var test2 = {};
-  		for (var i = 0; i < 10; i++) {
-  			test2['_' + String.fromCharCode(i)] = i;
-  		}
-  		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
-  			return test2[n];
-  		});
-  		if (order2.join('') !== '0123456789') {
-  			return false;
-  		}
+      // https://bugs.chromium.org/p/v8/issues/detail?id=3056
+      var test2 = {};
+      for (var i = 0; i < 10; i++) {
+        test2['_' + String.fromCharCode(i)] = i;
+      }
+      var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+        return test2[n];
+      });
+      if (order2.join('') !== '0123456789') {
+        return false;
+      }
 
-  		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-  		var test3 = {};
-  		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
-  			test3[letter] = letter;
-  		});
-  		if (Object.keys(Object.assign({}, test3)).join('') !==
-  				'abcdefghijklmnopqrst') {
-  			return false;
-  		}
+      // https://bugs.chromium.org/p/v8/issues/detail?id=3056
+      var test3 = {};
+      'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+        test3[letter] = letter;
+      });
+      if (Object.keys(Object.assign({}, test3)).join('') !==
+        'abcdefghijklmnopqrst') {
+        return false;
+      }
 
-  		return true;
-  	} catch (err) {
-  		// We don't expect any of the above to throw, but better to be safe.
-  		return false;
-  	}
+      return true;
+    } catch (err) {
+      // We don't expect any of the above to throw, but better to be safe.
+      return false;
+    }
   }
 
   var objectAssign = shouldUseNative() ? Object.assign : function (target, source) {
-  	var from;
-  	var to = toObject(target);
-  	var symbols;
+    var from;
+    var to = toObject(target);
+    var symbols;
 
-  	for (var s = 1; s < arguments.length; s++) {
-  		from = Object(arguments[s]);
+    for (var s = 1; s < arguments.length; s++) {
+      from = Object(arguments[s]);
 
-  		for (var key in from) {
-  			if (hasOwnProperty$1.call(from, key)) {
-  				to[key] = from[key];
-  			}
-  		}
+      for (var key in from) {
+        if (hasOwnProperty$1.call(from, key)) {
+          to[key] = from[key];
+        }
+      }
 
-  		if (getOwnPropertySymbols) {
-  			symbols = getOwnPropertySymbols(from);
-  			for (var i = 0; i < symbols.length; i++) {
-  				if (propIsEnumerable.call(from, symbols[i])) {
-  					to[symbols[i]] = from[symbols[i]];
-  				}
-  			}
-  		}
-  	}
+      if (getOwnPropertySymbols) {
+        symbols = getOwnPropertySymbols(from);
+        for (var i = 0; i < symbols.length; i++) {
+          if (propIsEnumerable.call(from, symbols[i])) {
+            to[symbols[i]] = from[symbols[i]];
+          }
+        }
+      }
+    }
 
-  	return to;
+    return to;
   };
 
   var isExcessiveUsage$3 = createExcessiveUsageIdentifier({
@@ -2813,16 +2790,39 @@
     return true;
   }
 
+  // Define the structure for page transition data
+
+  // Add page transition data to the global vars object
+
+  // Initialize the pageTransitionData property in vars
+  defaultVars.pageTransitionData = {};
+
+  // Function to set page transition data
+  function setPageTransitionData(data) {
+    defaultVars.pageTransitionData = data;
+  }
+
+  // Function to get page transition data
+  function getPageTransitionData() {
+    return defaultVars.pageTransitionData || {};
+  }
+
+  // Function to clear page transition data
+  function clearPageTransitionData() {
+    defaultVars.pageTransitionData = {};
+  }
+
   var isExcessiveUsage$4 = createExcessiveUsageIdentifier({
     maxCallsPerTenMinutes: 128,
     maxCallsPerTenSeconds: 32
   });
   function setPage(page, internalMeta) {
-    console.log('SETHU@#@#@-setPage', page, internalMeta);
     var previousPage = defaultVars.page;
     defaultVars.page = page;
     var isInitialPageDefinition = getActivePhase() === pageLoad && previousPage == null;
     if (!isInitialPageDefinition && previousPage !== page) {
+      console.log('Sending page change with duration:', internalMeta === null || internalMeta === void 0 ? void 0 : internalMeta['view.transition.duration']);
+      console.log('Sending page change with duration:');
       if (isExcessiveUsage$4()) {
         {
           info('Reached the maximum number of page changes to monitor.');
@@ -2838,14 +2838,26 @@
       'ty': 'pc',
       'ts': now()
     };
+
+    // Add page transition data to the beacon if available
+    var transitionData = getPageTransitionData();
+    if (transitionData.d !== undefined) {
+      beacon['d'] = transitionData.d;
+    }
+    if (transitionData.rul !== undefined) {
+      beacon['rul'] = transitionData.rul;
+    }
     addCommonBeaconProperties(beacon);
     if (internalMeta) {
       addInternalMetaDataToBeacon(beacon, internalMeta);
     }
+
+    // Clear the transition data after using it
+    clearPageTransitionData();
     sendBeacon$3(beacon);
   }
 
-  function isFunction (funktion) {
+  function isFunction(funktion) {
     return typeof funktion === 'function'
   }
 
@@ -2854,7 +2866,7 @@
 
   // Sets a property on an object, preserving its enumerability.
   // This function assumes that the property is already writable.
-  function defineProperty (obj, name, value) {
+  function defineProperty(obj, name, value) {
     var enumerable = !!obj[name] && obj.propertyIsEnumerable(name);
     Object.defineProperty(obj, name, {
       configurable: true,
@@ -2865,14 +2877,14 @@
   }
 
   // Keep initialization idempotent.
-  function shimmer (options) {
+  function shimmer(options) {
     if (options && options.logger) {
       if (!isFunction(options.logger)) logger("new logger isn't a function, not replacing");
       else logger = options.logger;
     }
   }
 
-  function wrap (nodule, name, wrapper) {
+  function wrap(nodule, name, wrapper) {
     if (!nodule || !nodule[name]) {
       logger('no original function ' + name + ' to wrap');
       return
@@ -2902,7 +2914,7 @@
     return wrapped
   }
 
-  function massWrap (nodules, names, wrapper) {
+  function massWrap(nodules, names, wrapper) {
     if (!nodules) {
       logger('must provide one or more modules to patch');
       logger((new Error()).stack);
@@ -2923,7 +2935,7 @@
     });
   }
 
-  function unwrap (nodule, name) {
+  function unwrap(nodule, name) {
     if (!nodule || !nodule[name]) {
       logger('no function to unwrap.');
       logger((new Error()).stack);
@@ -2937,7 +2949,7 @@
     }
   }
 
-  function massUnwrap (nodules, names) {
+  function massUnwrap(nodules, names) {
     if (!nodules) {
       logger('must provide one or more modules to patch');
       logger((new Error()).stack);
@@ -3022,32 +3034,21 @@
       // Store the total duration for the beacon
       transitionData.totalDuration = totalDuration;
 
-      // If there's a pending page change, complete it now with the duration
+      // // If there's a pending page change, trigger it now that we have the duration
+      // if (transitionData.pendingPageChange) {
+      //   // Just trigger the handlePossibleUrlChange again now that we have the duration
+      //   handlePossibleUrlChange(transitionData.pendingPageChange.url);
+
+      //   // Clear the pending page change
+      //   transitionData.pendingPageChange = undefined;
+      // }
       if (transitionData.pendingPageChange) {
-        var customizedPageName = transitionData.pendingPageChange.customizedPageName;
-
-        // Create beacon with timing data
-        var beacon = {
-          'view.title': doc.title,
-          'view.url': stripSecrets(normalizeUrl(transitionData.pendingPageChange.url, true)),
-          'duration': totalDuration // Set the duration for the beacon
-        };
-
-        // Add timestamp and event type to the beacon if available
-        if (transitionData.timestamp) {
-          beacon['pageChangeTimestamp'] = transitionData.timestamp;
-          if (transitionData.eventType) {
-            beacon['pageChangeEventType'] = transitionData.eventType;
-          }
-        }
-
-        // Send the page change beacon with the duration
-        setPage(customizedPageName, beacon);
-
-        // Clear the pending page change
+        var _transitionData$pendi = transitionData.pendingPageChange,
+          url = _transitionData$pendi.url,
+          customizedPageName = _transitionData$pendi.customizedPageName;
+        setPageWithConditions(url, customizedPageName, url);
         transitionData.pendingPageChange = undefined;
       }
-
       // Reset duration data after calculation
       transitionData.resourceDuration = undefined;
       transitionData.transitionDuration = undefined;
@@ -3071,6 +3072,8 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
+    console.log("JKG:: startResourceObservation");
+    transitionData.state = 'wait';
     if (activeResourceObserver) {
       var _activeResourceObserv, _activeResourceObserv2;
       (_activeResourceObserv = (_activeResourceObserv2 = activeResourceObserver).cancel) === null || _activeResourceObserv === void 0 || _activeResourceObserv.call(_activeResourceObserv2);
@@ -3081,24 +3084,29 @@
         // console.log('entry.initiatorType', entry.initiatorType);
         return ['fetch', 'xmlhttprequest', 'script', 'img', 'link'].includes(entry.initiatorType);
       },
-      maxWaitForResourceMillis: 2000,
-      maxToleranceForResourceTimingsMillis: 100,
+      maxWaitForResourceMillis: 3000,
+      maxToleranceForResourceTimingsMillis: 800,
       onEnd: function onEnd(_ref) {
         var resource = _ref.resource,
           duration = _ref.duration;
         var resourceDuration = parseFloat(duration.toFixed(2));
-        console.log("JKG:: try 1 - SPA transition took ".concat(resourceDuration, "ms"));
         if (resource) {
-          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name));
-          // Store resource duration and calculate total if transition duration is available
+          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
           transitionData.resourceDuration = resourceDuration;
-          calculateTotalTransitionTime();
+          transitionData.resourceUrl = resource.name;
+        } else {
+          console.log("JKG:: this is with no resource time");
         }
+        // Either way, try to complete
+        calculateTotalTransitionTime();
+        transitionData.state = 'done';
       }
     });
     activeResourceObserver.onBeforeResourceRetrieval();
   }
   function endResourceObservation() {
+    console.log("JKG:: endResourceObservation");
+    transitionData.state = 'done';
     if (activeResourceObserver) {
       activeResourceObserver.onAfterResourceRetrieved();
     }
@@ -3150,7 +3158,7 @@
         try {
           endResourceObservation();
           performance.mark('routeChangeEnd');
-          safeMeasure$1('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+          safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
           var _performance$getEntri = performance.getEntriesByName('PageTransition'),
             _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
             measure = _performance$getEntri2[0];
@@ -3160,7 +3168,8 @@
 
             // Store transition duration and calculate total if resource duration is available
             transitionData.transitionDuration = duration;
-            calculateTotalTransitionTime();
+            //calculateTotalTransitionTime();
+            maybeCompletePageTransition();
           }
 
           // ✅ Measure paint-related timings
@@ -3168,9 +3177,9 @@
             var paintObserver = new PerformanceObserver(function (list) {
               list.getEntries().forEach(function (entry) {
                 if (entry.name === 'first-paint') {
-                  console.log("\uD83C\uDFA8 First Paint: ".concat(entry.startTime.toFixed(2), "ms"));
+                  //console.log(`🎨 First Paint: ${entry.startTime.toFixed(2)}ms`);
                 } else if (entry.name === 'first-contentful-paint') {
-                  console.log("\uD83D\uDDBC First Contentful Paint: ".concat(entry.startTime.toFixed(2), "ms"));
+                  //console.log(`🖼 First Contentful Paint: ${entry.startTime.toFixed(2)}ms`);
                 }
               });
             });
@@ -3234,7 +3243,7 @@
       };
     };
   }
-  function safeMeasure$1(name, startMark, endMark) {
+  function safeMeasure(name, startMark, endMark) {
     var hasStart = performance.getEntriesByName(startMark).length > 0;
     var hasEnd = performance.getEntriesByName(endMark).length > 0;
     if (hasStart && hasEnd) {
@@ -3258,7 +3267,6 @@
     if (!transitionData.timestamp) {
       transitionData.timestamp = Date.now();
     }
-
     // Only set event type if not already set or if it's a hashchange
     if (!transitionData.eventType || newUrl.includes('#')) {
       transitionData.eventType = newUrl.includes('#') ? 'hashchange' : transitionData.eventType || 'navigation';
@@ -3267,37 +3275,37 @@
     var normalizedUrl = normalizeUrl(newUrl, true);
     var customizedPageName = applyCustomPageMappings(removeUrlOrigin(normalizedUrl));
     if (!customizedPageName) return;
-
+    setPageWithConditions(normalizedUrl, customizedPageName, newUrl);
+  }
+  function setPageWithConditions(normalizedUrl, customizedPageName, newUrl) {
+    console.log("Reached set page caller !!");
     // If we already have the total duration, we can send the beacon immediately
     if (transitionData.totalDuration !== undefined) {
-      // Create beacon with timing data
-      var beacon = {
+      //Create internal meta data for setPage
+      var internalMeta = {
         'view.title': doc.title,
-        'view.url': stripSecrets(normalizedUrl),
-        'duration': transitionData.totalDuration
+        'view.url': stripSecrets(normalizedUrl)
       };
-
-      // Add timestamp and event type to the beacon if available
-      if (transitionData.timestamp) {
-        beacon['pageChangeTimestamp'] = transitionData.timestamp;
-        if (transitionData.eventType) {
-          beacon['pageChangeEventType'] = transitionData.eventType;
-        }
-      }
-
-      // Send the page change beacon with the duration
-      setPage(customizedPageName, beacon);
+      // Store the duration and other properties to be added to the beacon
+      // These will be picked up by reportPageChange in pageChange.ts
+      setPageTransitionData({
+        d: transitionData.totalDuration,
+        rul: transitionData.resourceUrl
+      });
+      console.log('Sending page change with duration:', transitionData.totalDuration);
+      setPage(customizedPageName, internalMeta);
+      transitionData.totalDuration = undefined;
+      transitionData.resourceUrl = undefined;
 
       // Reset total duration after use
-      transitionData.totalDuration = undefined;
     } else {
       // Store the page change information to be processed when we have the duration
       transitionData.pendingPageChange = {
         url: newUrl,
         customizedPageName: customizedPageName
       };
-      console.log('Page change pending until duration is calculated');
     }
+    console.log('Page change pending until duration is calculated');
   }
   function applyCustomPageMappings(urlPath) {
     var rules = getAutoPageDetectionMappingRule();
@@ -3349,6 +3357,11 @@
       titleAsPageName: guessCmd['titleAsPageName'],
       mappingRule: guessCmd['mappingRule']
     };
+  }
+  function maybeCompletePageTransition() {
+    if (transitionData.transitionDuration !== undefined && transitionData.pendingPageChange) {
+      calculateTotalTransitionTime(); // This will internally call `handlePossibleUrlChange` again
+    }
   }
 
   function processCommand(command) {
@@ -3579,7 +3592,7 @@
     };
   }
 
-  try {var e,n,t,i,r,a=-1,o=function(e){addEventListener("pageshow",(function(n){n.persisted&&(a=n.timeStamp,e(n));}),!0);},c=function(){return window.performance&&performance.getEntriesByType&&performance.getEntriesByType("navigation")[0]},u=function(){var e=c();return e&&e.activationStart||0},f=function(e,n){var t=c(),i="navigate";a>=0?i="back-forward-cache":t&&(document.prerendering||u()>0?i="prerender":document.wasDiscarded?i="restore":t.type&&(i=t.type.replace(/_/g,"-")));return {name:e,value:void 0===n?-1:n,rating:"good",delta:0,entries:[],id:"v3-".concat(Date.now(),"-").concat(Math.floor(8999999999999*Math.random())+1e12),navigationType:i}},s=function(e,n,t){try{if(PerformanceObserver.supportedEntryTypes.includes(e)){var i=new PerformanceObserver((function(e){Promise.resolve().then((function(){n(e.getEntries());}));}));return i.observe(Object.assign({type:e,buffered:!0},t||{})),i}}catch(e){}},d=function(e,n,t,i){var r,a;return function(o){n.value>=0&&(o||i)&&((a=n.value-(r||0))||void 0===r)&&(r=n.value,n.delta=a,n.rating=function(e,n){return e>n[1]?"poor":e>n[0]?"needs-improvement":"good"}(n.value,t),e(n));}},l=function(e){requestAnimationFrame((function(){return requestAnimationFrame((function(){return e()}))}));},p=function(e){var n=function(n){"pagehide"!==n.type&&"hidden"!==document.visibilityState||e(n);};addEventListener("visibilitychange",n,!0),addEventListener("pagehide",n,!0);},v=function(e){var n=!1;return function(t){n||(e(t),n=!0);}},m=-1,h=function(){return "hidden"!==document.visibilityState||document.prerendering?1/0:0},g=function(e){"hidden"===document.visibilityState&&m>-1&&(m="visibilitychange"===e.type?e.timeStamp:0,T());},y=function(){addEventListener("visibilitychange",g,!0),addEventListener("prerenderingchange",g,!0);},T=function(){removeEventListener("visibilitychange",g,!0),removeEventListener("prerenderingchange",g,!0);},E=function(){return m<0&&(m=h(),y(),o((function(){setTimeout((function(){m=h(),y();}),0);}))),{get firstHiddenTime(){return m}}},C=function(e){document.prerendering?addEventListener("prerenderingchange",(function(){return e()}),!0):e();},L=[1800,3e3],w=function(e,n){n=n||{},C((function(){var t,i=E(),r=f("FCP"),a=s("paint",(function(e){e.forEach((function(e){"first-contentful-paint"===e.name&&(a.disconnect(),e.startTime<i.firstHiddenTime&&(r.value=Math.max(e.startTime-u(),0),r.entries.push(e),t(!0)));}));}));a&&(t=d(e,r,L,n.reportAllChanges),o((function(i){r=f("FCP"),t=d(e,r,L,n.reportAllChanges),l((function(){r.value=performance.now()-i.timeStamp,t(!0);}));})));}));},b=[.1,.25],S=function(e,n){n=n||{},w(v((function(){var t,i=f("CLS",0),r=0,a=[],c=function(e){e.forEach((function(e){if(!e.hadRecentInput){var n=a[0],t=a[a.length-1];r&&e.startTime-t.startTime<1e3&&e.startTime-n.startTime<5e3?(r+=e.value,a.push(e)):(r=e.value,a=[e]);}})),r>i.value&&(i.value=r,i.entries=a,t());},u=s("layout-shift",c);u&&(t=d(e,i,b,n.reportAllChanges),p((function(){c(u.takeRecords()),t(!0);})),o((function(){r=0,i=f("CLS",0),t=d(e,i,b,n.reportAllChanges),l((function(){return t()}));})),setTimeout(t,0));})));},A={passive:!0,capture:!0},I=new Date,P=function(i,r){e||(e=r,n=i,t=new Date,k(removeEventListener),F());},F=function(){if(n>=0&&n<t-I){var r={entryType:"first-input",name:e.type,target:e.target,cancelable:e.cancelable,startTime:e.timeStamp,processingStart:e.timeStamp+n};i.forEach((function(e){e(r);})),i=[];}},M=function(e){if(e.cancelable){var n=(e.timeStamp>1e12?new Date:performance.now())-e.timeStamp;"pointerdown"==e.type?function(e,n){var t=function(){P(e,n),r();},i=function(){r();},r=function(){removeEventListener("pointerup",t,A),removeEventListener("pointercancel",i,A);};addEventListener("pointerup",t,A),addEventListener("pointercancel",i,A);}(n,e):P(n,e);}},k=function(e){["mousedown","keydown","touchstart","pointerdown"].forEach((function(n){return e(n,M,A)}));},D=[100,300],x=function(t,r){r=r||{},C((function(){var a,c=E(),u=f("FID"),l=function(e){e.startTime<c.firstHiddenTime&&(u.value=e.processingStart-e.startTime,u.entries.push(e),a(!0));},m=function(e){e.forEach(l);},h=s("first-input",m);a=d(t,u,D,r.reportAllChanges),h&&p(v((function(){m(h.takeRecords()),h.disconnect();}))),h&&o((function(){var o;u=f("FID"),a=d(t,u,D,r.reportAllChanges),i=[],n=-1,e=null,k(addEventListener),o=l,i.push(o),F();}));}));},B=0,R=1/0,H=0,N=function(e){e.forEach((function(e){e.interactionId&&(R=Math.min(R,e.interactionId),H=Math.max(H,e.interactionId),B=H?(H-R)/7+1:0);}));},O=function(){return r?B:performance.interactionCount||0},q=function(){"interactionCount"in performance||r||(r=s("event",N,{type:"event",buffered:!0,durationThreshold:0}));},j=[200,500],_=0,z=function(){return O()-_},G=[],J={},K=function(e){var n=G[G.length-1],t=J[e.interactionId];if(t||G.length<10||e.duration>n.latency){if(t)t.entries.push(e),t.latency=Math.max(t.latency,e.duration);else {var i={id:e.interactionId,latency:e.duration,entries:[e]};J[i.id]=i,G.push(i);}G.sort((function(e,n){return n.latency-e.latency})),G.splice(10).forEach((function(e){delete J[e.id];}));}},Q=function(e,n){n=n||{},C((function(){var t;q();var i,r=f("INP"),a=function(e){e.forEach((function(e){(e.interactionId&&K(e),"first-input"===e.entryType)&&(!G.some((function(n){return n.entries.some((function(n){return e.duration===n.duration&&e.startTime===n.startTime}))}))&&K(e));}));var n,t=(n=Math.min(G.length-1,Math.floor(z()/50)),G[n]);t&&t.latency!==r.value&&(r.value=t.latency,r.entries=t.entries,i());},c=s("event",a,{durationThreshold:null!==(t=n.durationThreshold)&&void 0!==t?t:40});i=d(e,r,j,n.reportAllChanges),c&&("PerformanceEventTiming"in window&&"interactionId"in PerformanceEventTiming.prototype&&c.observe({type:"first-input",buffered:!0}),p((function(){a(c.takeRecords()),r.value<0&&z()>0&&(r.value=0,r.entries=[]),i(!0);})),o((function(){G=[],_=O(),r=f("INP"),i=d(e,r,j,n.reportAllChanges);})));}));},U=[2500,4e3],V={},W=function(e,n){n=n||{},C((function(){var t,i=E(),r=f("LCP"),a=function(e){var n=e[e.length-1];n&&n.startTime<i.firstHiddenTime&&(r.value=Math.max(n.startTime-u(),0),r.entries=[n],t());},c=s("largest-contentful-paint",a);if(c){t=d(e,r,U,n.reportAllChanges);var m=v((function(){V[r.id]||(a(c.takeRecords()),c.disconnect(),V[r.id]=!0,t(!0));}));["keydown","click"].forEach((function(e){addEventListener(e,(function(){return setTimeout(m,0)}),!0);})),p(m),o((function(i){r=f("LCP"),t=d(e,r,U,n.reportAllChanges),l((function(){r.value=performance.now()-i.timeStamp,V[r.id]=!0,t(!0);}));}));}}));},X=[800,1800],Y=function e(n){document.prerendering?C((function(){return e(n)})):"complete"!==document.readyState?addEventListener("load",(function(){return e(n)}),!0):setTimeout(n,0);},Z=function(e,n){n=n||{};var t=f("TTFB"),i=d(e,t,X,n.reportAllChanges);Y((function(){var r=c();if(r){var a=r.responseStart;if(a<=0||a>performance.now())return;t.value=Math.max(a-u(),0),t.entries=[r],i(!0),o((function(){t=f("TTFB",0),(i=d(e,t,X,n.reportAllChanges))(!0);}));}}));};} catch (e) {}
+  try { var e, n, t, i, r, a = -1, o = function (e) { addEventListener("pageshow", (function (n) { n.persisted && (a = n.timeStamp, e(n)); }), !0); }, c = function () { return window.performance && performance.getEntriesByType && performance.getEntriesByType("navigation")[0] }, u = function () { var e = c(); return e && e.activationStart || 0 }, f = function (e, n) { var t = c(), i = "navigate"; a >= 0 ? i = "back-forward-cache" : t && (document.prerendering || u() > 0 ? i = "prerender" : document.wasDiscarded ? i = "restore" : t.type && (i = t.type.replace(/_/g, "-"))); return { name: e, value: void 0 === n ? -1 : n, rating: "good", delta: 0, entries: [], id: "v3-".concat(Date.now(), "-").concat(Math.floor(8999999999999 * Math.random()) + 1e12), navigationType: i } }, s = function (e, n, t) { try { if (PerformanceObserver.supportedEntryTypes.includes(e)) { var i = new PerformanceObserver((function (e) { Promise.resolve().then((function () { n(e.getEntries()); })); })); return i.observe(Object.assign({ type: e, buffered: !0 }, t || {})), i } } catch (e) { } }, d = function (e, n, t, i) { var r, a; return function (o) { n.value >= 0 && (o || i) && ((a = n.value - (r || 0)) || void 0 === r) && (r = n.value, n.delta = a, n.rating = function (e, n) { return e > n[1] ? "poor" : e > n[0] ? "needs-improvement" : "good" }(n.value, t), e(n)); } }, l = function (e) { requestAnimationFrame((function () { return requestAnimationFrame((function () { return e() })) })); }, p = function (e) { var n = function (n) { "pagehide" !== n.type && "hidden" !== document.visibilityState || e(n); }; addEventListener("visibilitychange", n, !0), addEventListener("pagehide", n, !0); }, v = function (e) { var n = !1; return function (t) { n || (e(t), n = !0); } }, m = -1, h = function () { return "hidden" !== document.visibilityState || document.prerendering ? 1 / 0 : 0 }, g = function (e) { "hidden" === document.visibilityState && m > -1 && (m = "visibilitychange" === e.type ? e.timeStamp : 0, T()); }, y = function () { addEventListener("visibilitychange", g, !0), addEventListener("prerenderingchange", g, !0); }, T = function () { removeEventListener("visibilitychange", g, !0), removeEventListener("prerenderingchange", g, !0); }, E = function () { return m < 0 && (m = h(), y(), o((function () { setTimeout((function () { m = h(), y(); }), 0); }))), { get firstHiddenTime() { return m } } }, C = function (e) { document.prerendering ? addEventListener("prerenderingchange", (function () { return e() }), !0) : e(); }, L = [1800, 3e3], w = function (e, n) { n = n || {}, C((function () { var t, i = E(), r = f("FCP"), a = s("paint", (function (e) { e.forEach((function (e) { "first-contentful-paint" === e.name && (a.disconnect(), e.startTime < i.firstHiddenTime && (r.value = Math.max(e.startTime - u(), 0), r.entries.push(e), t(!0))); })); })); a && (t = d(e, r, L, n.reportAllChanges), o((function (i) { r = f("FCP"), t = d(e, r, L, n.reportAllChanges), l((function () { r.value = performance.now() - i.timeStamp, t(!0); })); }))); })); }, b = [.1, .25], S = function (e, n) { n = n || {}, w(v((function () { var t, i = f("CLS", 0), r = 0, a = [], c = function (e) { e.forEach((function (e) { if (!e.hadRecentInput) { var n = a[0], t = a[a.length - 1]; r && e.startTime - t.startTime < 1e3 && e.startTime - n.startTime < 5e3 ? (r += e.value, a.push(e)) : (r = e.value, a = [e]); } })), r > i.value && (i.value = r, i.entries = a, t()); }, u = s("layout-shift", c); u && (t = d(e, i, b, n.reportAllChanges), p((function () { c(u.takeRecords()), t(!0); })), o((function () { r = 0, i = f("CLS", 0), t = d(e, i, b, n.reportAllChanges), l((function () { return t() })); })), setTimeout(t, 0)); }))); }, A = { passive: !0, capture: !0 }, I = new Date, P = function (i, r) { e || (e = r, n = i, t = new Date, k(removeEventListener), F()); }, F = function () { if (n >= 0 && n < t - I) { var r = { entryType: "first-input", name: e.type, target: e.target, cancelable: e.cancelable, startTime: e.timeStamp, processingStart: e.timeStamp + n }; i.forEach((function (e) { e(r); })), i = []; } }, M = function (e) { if (e.cancelable) { var n = (e.timeStamp > 1e12 ? new Date : performance.now()) - e.timeStamp; "pointerdown" == e.type ? function (e, n) { var t = function () { P(e, n), r(); }, i = function () { r(); }, r = function () { removeEventListener("pointerup", t, A), removeEventListener("pointercancel", i, A); }; addEventListener("pointerup", t, A), addEventListener("pointercancel", i, A); }(n, e) : P(n, e); } }, k = function (e) { ["mousedown", "keydown", "touchstart", "pointerdown"].forEach((function (n) { return e(n, M, A) })); }, D = [100, 300], x = function (t, r) { r = r || {}, C((function () { var a, c = E(), u = f("FID"), l = function (e) { e.startTime < c.firstHiddenTime && (u.value = e.processingStart - e.startTime, u.entries.push(e), a(!0)); }, m = function (e) { e.forEach(l); }, h = s("first-input", m); a = d(t, u, D, r.reportAllChanges), h && p(v((function () { m(h.takeRecords()), h.disconnect(); }))), h && o((function () { var o; u = f("FID"), a = d(t, u, D, r.reportAllChanges), i = [], n = -1, e = null, k(addEventListener), o = l, i.push(o), F(); })); })); }, B = 0, R = 1 / 0, H = 0, N = function (e) { e.forEach((function (e) { e.interactionId && (R = Math.min(R, e.interactionId), H = Math.max(H, e.interactionId), B = H ? (H - R) / 7 + 1 : 0); })); }, O = function () { return r ? B : performance.interactionCount || 0 }, q = function () { "interactionCount" in performance || r || (r = s("event", N, { type: "event", buffered: !0, durationThreshold: 0 })); }, j = [200, 500], _ = 0, z = function () { return O() - _ }, G = [], J = {}, K = function (e) { var n = G[G.length - 1], t = J[e.interactionId]; if (t || G.length < 10 || e.duration > n.latency) { if (t) t.entries.push(e), t.latency = Math.max(t.latency, e.duration); else { var i = { id: e.interactionId, latency: e.duration, entries: [e] }; J[i.id] = i, G.push(i); } G.sort((function (e, n) { return n.latency - e.latency })), G.splice(10).forEach((function (e) { delete J[e.id]; })); } }, Q = function (e, n) { n = n || {}, C((function () { var t; q(); var i, r = f("INP"), a = function (e) { e.forEach((function (e) { (e.interactionId && K(e), "first-input" === e.entryType) && (!G.some((function (n) { return n.entries.some((function (n) { return e.duration === n.duration && e.startTime === n.startTime })) })) && K(e)); })); var n, t = (n = Math.min(G.length - 1, Math.floor(z() / 50)), G[n]); t && t.latency !== r.value && (r.value = t.latency, r.entries = t.entries, i()); }, c = s("event", a, { durationThreshold: null !== (t = n.durationThreshold) && void 0 !== t ? t : 40 }); i = d(e, r, j, n.reportAllChanges), c && ("PerformanceEventTiming" in window && "interactionId" in PerformanceEventTiming.prototype && c.observe({ type: "first-input", buffered: !0 }), p((function () { a(c.takeRecords()), r.value < 0 && z() > 0 && (r.value = 0, r.entries = []), i(!0); })), o((function () { G = [], _ = O(), r = f("INP"), i = d(e, r, j, n.reportAllChanges); }))); })); }, U = [2500, 4e3], V = {}, W = function (e, n) { n = n || {}, C((function () { var t, i = E(), r = f("LCP"), a = function (e) { var n = e[e.length - 1]; n && n.startTime < i.firstHiddenTime && (r.value = Math.max(n.startTime - u(), 0), r.entries = [n], t()); }, c = s("largest-contentful-paint", a); if (c) { t = d(e, r, U, n.reportAllChanges); var m = v((function () { V[r.id] || (a(c.takeRecords()), c.disconnect(), V[r.id] = !0, t(!0)); }));["keydown", "click"].forEach((function (e) { addEventListener(e, (function () { return setTimeout(m, 0) }), !0); })), p(m), o((function (i) { r = f("LCP"), t = d(e, r, U, n.reportAllChanges), l((function () { r.value = performance.now() - i.timeStamp, V[r.id] = !0, t(!0); })); })); } })); }, X = [800, 1800], Y = function e(n) { document.prerendering ? C((function () { return e(n) })) : "complete" !== document.readyState ? addEventListener("load", (function () { return e(n) }), !0) : setTimeout(n, 0); }, Z = function (e, n) { n = n || {}; var t = f("TTFB"), i = d(e, t, X, n.reportAllChanges); Y((function () { var r = c(); if (r) { var a = r.responseStart; if (a <= 0 || a > performance.now()) return; t.value = Math.max(a - u(), 0), t.entries = [r], i(!0), o((function () { t = f("TTFB", 0), (i = d(e, t, X, n.reportAllChanges))(!0); })); } })); }; } catch (e) { }
 
   function reportExtraMetrics(metric) {
     if (!defaultVars.webvitalsInCustomEvent) {
@@ -3629,7 +3642,7 @@
 
   var state$2 = {
     onEnter: function onEnter() {
-      if ( !fulfillsPrerequisites()) {
+      if (!fulfillsPrerequisites()) {
         warn('Browser does not have all the required features for web monitoring.');
       }
       var globalObjectName = win[defaultVars.nameOfLongGlobal];
@@ -3742,12 +3755,12 @@
     // Validity check: traceparent must have 3 parts and each part must have a valid length
     var traceParentParts = traceParent.split('-');
     if (traceParentParts.length === 4 && traceParentParts[0] === '00' &&
-    // Ensure version is '00'
-    traceParentParts[1].length === 32 &&
-    // Ensure trace ID length is 32
-    traceParentParts[2].length === 16 &&
-    // Ensure span ID length is 16
-    traceParentParts[3].length === 2) {
+      // Ensure version is '00'
+      traceParentParts[1].length === 32 &&
+      // Ensure trace ID length is 32
+      traceParentParts[2].length === 16 &&
+      // Ensure span ID length is 16
+      traceParentParts[3].length === 2) {
       // Ensure flags length is 2
       return traceParentParts[2]; // Return the tracestate
     }
