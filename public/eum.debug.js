@@ -1394,6 +1394,9 @@
         info('Tracking request url excluding query parameters and fragment strings', data['u']);
       }
     }
+    {
+      info('Transmitting beacon', data);
+    }
     if (isExcessiveUsage() && data['ty'] != 'pl') {
       {
         info('Reached the maximum number of beacons to transmit.');
@@ -1640,7 +1643,6 @@
       cancel: disposeGlobalResources
     };
     function onBeforeResourceRetrieval() {
-      //performance.mark('routeChangeStart');
       startTime = performance$1.now();
       try {
         observer = new win['PerformanceObserver'](onResource);
@@ -1654,9 +1656,7 @@
         // entryTypes only contained unsupported types
         //
         // Swallow and ignore the error. Treat it like unavailable performance observer data.
-        {
-          info('Unavailable performance observer data', e);
-        }
+        info('PageChange:: Unavailable performance observer data', e);
       }
       fallbackEndNeverCalledTimerHandle = setTimeout$1(disposeGlobalResources, 1000 * 60 * 10);
     }
@@ -1669,31 +1669,6 @@
         addEventListener$1(doc, 'visibilitychange', onVisibilityChanged);
         fallbackNoResourceFoundTimerHandle = setTimeout$1(end, opts.maxWaitForResourceMillis);
       }
-
-      //performance.mark('routeChangeEnd');
-      if ('PerformanceObserver' in window) {
-        var paintObs = new PerformanceObserver(function (list) {
-          list.getEntries().forEach(function (entry) {
-            //console.log('entry', entry);
-            if (entry.name === 'first-contentful-paint'); else if (entry.name === 'largest-contentful-paint');
-          });
-        });
-        try {
-          paintObs.observe({
-            type: 'paint',
-            buffered: true
-          });
-          paintObs.observe({
-            type: 'largest-contentful-paint',
-            buffered: true
-          });
-        } catch (e) {/* empty */ }
-      }
-      //safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-      // const [measure] = performance.getEntriesByName('PageTransition');
-      // if (measure) {
-      //   console.log(`JKG1111:: Page transition duration: ${measure.duration.toFixed(2)}ms`);
-      // }
     }
     function end() {
       disposeGlobalResources();
@@ -2821,8 +2796,6 @@
     defaultVars.page = page;
     var isInitialPageDefinition = getActivePhase() === pageLoad && previousPage == null;
     if (!isInitialPageDefinition && previousPage !== page) {
-      console.log('Sending page change with duration:', internalMeta === null || internalMeta === void 0 ? void 0 : internalMeta['view.transition.duration']);
-      console.log('Sending page change with duration:');
       if (isExcessiveUsage$4()) {
         {
           info('Reached the maximum number of page changes to monitor.');
@@ -3053,7 +3026,7 @@
     win.addEventListener('hashchange', hashChangeEventListener);
     isHashChangeListenerAdded = true;
     if (!ignorePopstateEvent()) {
-      info('handlePossibleUrlChange on popstate event received');
+      info('PageChange:: handlePossibleUrlChange on popstate event received');
       win.addEventListener('popstate', popStateEventListener);
       isPopstateEventListenerAdded = true;
     }
@@ -3063,40 +3036,45 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
-    console.log('JKG:: startResourceObservation');
     transitionData.state = 'wait';
-    if (activeResourceObserver) {
-      var _activeResourceObserv, _activeResourceObserv2;
-      (_activeResourceObserv = (_activeResourceObserv2 = activeResourceObserver).cancel) === null || _activeResourceObserv === void 0 || _activeResourceObserv.call(_activeResourceObserv2);
-    }
-    activeResourceObserver = observeResourcePerformance({
-      entryTypes: ['resource'],
-      resourceMatcher: function resourceMatcher(entry) {
-        // console.log('entry.initiatorType', entry.initiatorType);
-        return ['fetch', 'xmlhttprequest', 'script', 'img', 'link'].includes(entry.initiatorType);
-      },
-      maxWaitForResourceMillis: 3000,
-      maxToleranceForResourceTimingsMillis: 800,
-      onEnd: function onEnd(_ref) {
-        var resource = _ref.resource,
-          duration = _ref.duration;
-        var resourceDuration = parseFloat(duration.toFixed(2));
-        if (resource) {
-          console.log("JKG:: try 1 - Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
-          transitionData.resourceDuration = resourceDuration;
-          transitionData.resourceUrl = resource.name;
-        } else {
-          console.log('JKG:: this is with no resource time');
-        }
-        // Either way, try to complete
-        calculateTotalTransitionTime();
-        transitionData.state = 'done';
-      }
-    });
+    cancelActiveObserverIfNeeded();
+    activeResourceObserver = createResourceObserver();
     activeResourceObserver.onBeforeResourceRetrieval();
   }
+  function cancelActiveObserverIfNeeded() {
+    var _activeResourceObserv;
+    if ((_activeResourceObserv = activeResourceObserver) !== null && _activeResourceObserv !== void 0 && _activeResourceObserv.cancel) {
+      activeResourceObserver.cancel();
+    }
+  }
+  function createResourceObserver() {
+    return observeResourcePerformance({
+      entryTypes: ['resource'],
+      resourceMatcher: isRelevantResourceType,
+      maxWaitForResourceMillis: 3000,
+      maxToleranceForResourceTimingsMillis: 800,
+      onEnd: handleResourceObservationEnd
+    });
+  }
+  function isRelevantResourceType(entry) {
+    var allowedTypes = ['fetch', 'xmlhttprequest', 'script', 'img', 'link'];
+    return allowedTypes.includes(entry.initiatorType);
+  }
+  function handleResourceObservationEnd(_ref) {
+    var resource = _ref.resource,
+      duration = _ref.duration;
+    var resourceDuration = parseFloat(duration.toFixed(2));
+    if (resource) {
+      info("PageChange:: Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
+      transitionData.resourceDuration = resourceDuration;
+      transitionData.resourceUrl = resource.name;
+    } else {
+      info('PageChange:: This is with no resource time');
+    }
+    calculateTotalTransitionTime();
+    transitionData.state = 'done';
+  }
   function endResourceObservation() {
-    console.log('JKG:: endResourceObservation');
     transitionData.state = 'done';
     if (activeResourceObserver) {
       activeResourceObserver.onAfterResourceRetrieved();
@@ -3116,13 +3094,14 @@
     }
   }
   function hashChangeEventListener(event) {
-    console.log('SETHU@#@#@-hashChangeEventListener', event);
-    info("hashchange to ".concat(event.newURL, " from ").concat(event.oldURL, ", current location ").concat(win.location));
+    info("PageChange:: hashchange to ".concat(event.newURL, " from ").concat(event.oldURL, ", current location ").concat(win.location));
     try {
       startResourceObservation();
       performance.mark('routeChangeStart');
     } catch (e) {
-      console.log('Failed to mark hashchange routeChangeStart', e);
+      {
+        info('PageChange:: Failed to mark hashchange routeChangeStart', e);
+      }
     }
     requestIdleCallback(function () {
       return endRouteAndUpdateTime('hashchange');
@@ -3130,69 +3109,68 @@
     handlePossibleUrlChange(event.newURL);
   }
   function popStateEventListener(_event) {
-    console.log('SETHU@#@#@-popStateEventListener', _event);
-    info("popstate current location ".concat(win.location));
+    info("PageChange:: popstate current location ".concat(win.location));
     try {
       startResourceObservation();
       performance.mark('routeChangeStart');
     } catch (e) {
-      console.log('Failed to mark popstate routeChangeStart', e);
+      {
+        info('PageChange:: Failed to mark popstate routeChangeStart', e);
+      }
     }
     requestIdleCallback(function () {
       return endRouteAndUpdateTime('popstate');
     });
     handlePossibleUrlChange(window.location.pathname);
   }
-  function endRouteAndUpdateTime(name) {
+  function endRouteAndUpdateTime(routeName) {
     Promise.resolve().then(function () {
       setTimeout$1(function () {
         try {
-          endResourceObservation();
-          performance.mark('routeChangeEnd');
-          safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
-          var _performance$getEntri = performance.getEntriesByName('PageTransition'),
-            _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
-            measure = _performance$getEntri2[0];
-          if (measure) {
-            var duration = parseFloat(measure.duration.toFixed(2));
-            console.log("JKG:: ".concat(name, " transition duration: ").concat(duration, "ms"));
-
-            // Store transition duration and calculate total if resource duration is available
-            transitionData.transitionDuration = duration;
-            //calculateTotalTransitionTime();
-            maybeCompletePageTransition();
+          finalizePerformanceTracking(routeName);
+        } catch (err) {
+          {
+            info("PageChange:: [RouteTiming] ".concat(routeName, " - measurement failed:"), err);
           }
-
-          // ✅ Measure paint-related timings
-          if ('PerformanceObserver' in window) {
-            var paintObserver = new PerformanceObserver(function (list) {
-              list.getEntries().forEach(function (entry) {
-                if (entry.name === 'first-paint') {
-                  //console.log(`🎨 First Paint: ${entry.startTime.toFixed(2)}ms`);
-                } else if (entry.name === 'first-contentful-paint') {
-                  //console.log(`🖼 First Contentful Paint: ${entry.startTime.toFixed(2)}ms`);
-                }
-              });
-            });
-            try {
-              paintObserver.observe({
-                type: 'paint',
-                buffered: true
-              });
-            } catch (e) {
-              console.log('Error observing paint metrics', e);
-            }
-          }
-        } catch (e) {
-          console.log("JKG ".concat(name, " timing measure failed"), e);
         } finally {
-          performance.clearMarks('routeChangeStart');
-          performance.clearMarks('routeChangeEnd');
-          performance.clearMeasures('PageTransition');
+          cleanupPerformanceEntries();
         }
       }, 100);
     });
   }
+  function finalizePerformanceTracking(routeName) {
+    endResourceObservation();
+    performance.mark('routeChangeEnd');
+    safeMeasure('PageTransition', 'routeChangeStart', 'routeChangeEnd');
+    var _performance$getEntri = performance.getEntriesByName('PageTransition'),
+      _performance$getEntri2 = _slicedToArray(_performance$getEntri, 1),
+      measure = _performance$getEntri2[0];
+    if (measure) {
+      var duration = parseFloat(measure.duration.toFixed(2));
+      {
+        info("PageChange:: [RouteTiming] ".concat(routeName, " transition duration: ").concat(duration, "ms"));
+      }
+      transitionData.transitionDuration = duration;
+      processPendingPageTransition();
+    }
+  }
+  function cleanupPerformanceEntries() {
+    performance.clearMarks('routeChangeStart');
+    performance.clearMarks('routeChangeEnd');
+    performance.clearMeasures('PageTransition');
+  }
+
+  /**
+   * Do not need to wrap history.go, history.backward and history.forward
+   * since they do not bring location information in time.
+   * hashchange and popstate serve better roles here.
+   * Old and new url information is carried by hashchange event.
+   * For popstate event, window.location is already updated with new location.
+   *
+   * https://developer.mozilla.org/en-US/docs/Web/API/History/pushState#description
+   * Note that pushState() never causes a hashchange event to be fired,
+   * even if the new URL differs from the old URL only in its hash.
+   */
   function wrapHistoryMethods() {
     shimmer_1.wrap(win.history, 'replaceState', _patchHistoryMethod('replaceState'));
     shimmer_1.wrap(win.history, 'pushState', _patchHistoryMethod('pushState'));
@@ -3223,7 +3201,7 @@
           startResourceObservation();
           performance.mark('routeChangeStart');
         } catch (e) {
-          console.log('Failed to mark routeChangeStart', e);
+          info('PageChange:: Failed to mark routeChangeStart', e);
         }
         var result = original.apply(this, args);
         requestIdleCallback(function () {
@@ -3242,7 +3220,7 @@
       performance.measure(name, startMark, endMark);
       return (_performance$getEntri3 = (_performance$getEntri4 = performance.getEntriesByName(name)[0]) === null || _performance$getEntri4 === void 0 ? void 0 : _performance$getEntri4.duration) !== null && _performance$getEntri3 !== void 0 ? _performance$getEntri3 : null;
     } else {
-      error("Missing marks for measure '".concat(name, "':"), {
+      info("PageChange:: Missing marks for measure '".concat(name, "':"), {
         hasStart: hasStart,
         hasEnd: hasEnd
       });
@@ -3250,53 +3228,60 @@
     }
   }
   function updateLocation(args) {
+    // pushState(state, unused)
+    // pushState(state, unused, url)
+    // replaceState(state, unused)
+    // replaceState(state, unused, url)
+
+    // replaceState:
+    // For React, arguments length is 2, so no place for new url.
+    // For Angular, arguments length is 3. 3rd argument is new url.
+    // pushState: Observation is argument length is always 3.
     var newUrl = args.length > 2 ? args[2] : null;
-    if (newUrl) handlePossibleUrlChange(String(newUrl));
+    if (newUrl) {
+      handlePossibleUrlChange(String(newUrl));
+    }
   }
   function handlePossibleUrlChange(newUrl) {
-    // Record timestamp and event type if not already set
     if (!transitionData.timestamp) {
       transitionData.timestamp = Date.now();
     }
-    // Only set event type if not already set or if it's a hashchange
     if (!transitionData.eventType || newUrl.includes('#')) {
       transitionData.eventType = newUrl.includes('#') ? 'hashchange' : transitionData.eventType || 'navigation';
     }
-    console.log('Page change detected at:', new Date(transitionData.timestamp).toISOString());
     var normalizedUrl = normalizeUrl(newUrl, true);
     var customizedPageName = applyCustomPageMappings(removeUrlOrigin(normalizedUrl));
     if (!customizedPageName) return;
     setPageWithConditions(normalizedUrl, customizedPageName, newUrl);
   }
   function setPageWithConditions(normalizedUrl, customizedPageName, newUrl) {
-    console.log('Reached set page caller !!');
-    // If we already have the total duration, we can send the beacon immediately
-    if (transitionData.totalDuration !== undefined) {
-      //Create internal meta data for setPage
-      var internalMeta = {
-        'view.title': doc.title,
-        'view.url': stripSecrets(normalizedUrl)
-      };
-      // Store the duration and other properties to be added to the beacon
-      // These will be picked up by reportPageChange in pageChange.ts
-      setPageTransitionData({
-        d: transitionData.totalDuration,
-        rul: transitionData.resourceUrl
-      });
-      console.log('Sending page change with duration:', transitionData.totalDuration);
-      setPage(customizedPageName, internalMeta);
-      transitionData.totalDuration = undefined;
-      transitionData.resourceUrl = undefined;
-
-      // Reset total duration after use
-    } else {
-      // Store the page change information to be processed when we have the duration
-      transitionData.pendingPageChange = {
-        url: newUrl,
-        customizedPageName: customizedPageName
-      };
+    var hasTransitionDuration = transitionData.totalDuration !== undefined;
+    if (!hasTransitionDuration) {
+      queuePendingPageChange(newUrl, customizedPageName);
+      return;
     }
-    console.log('Page change pending until duration is calculated');
+    var sanitizedUrl = stripSecrets(normalizedUrl);
+    var meta = {
+      'view.title': doc.title,
+      'view.url': sanitizedUrl
+    };
+    setPageTransitionData({
+      d: transitionData.totalDuration,
+      rul: transitionData.resourceUrl
+    });
+    info('PageChange:: Sending page change with duration:', transitionData.totalDuration);
+    setPage(customizedPageName, meta);
+    clearTransitionData();
+  }
+  function queuePendingPageChange(url, customizedPageName) {
+    transitionData.pendingPageChange = {
+      url: url,
+      customizedPageName: customizedPageName
+    };
+  }
+  function clearTransitionData() {
+    transitionData.totalDuration = undefined;
+    transitionData.resourceUrl = undefined;
   }
   function applyCustomPageMappings(urlPath) {
     var rules = getAutoPageDetectionMappingRule();
@@ -3317,7 +3302,10 @@
       var url = new URL(fullUrl);
       return "".concat(url.pathname).concat(url.search).concat(url.hash);
     } catch (err) {
-      error('failed to remove origin from url', fullUrl, err);
+      // fallback to input string if it's not a valid full url
+      {
+        error('failed to remove origin from url', fullUrl, err);
+      }
     }
     return fullUrl;
   }
@@ -3349,9 +3337,9 @@
       mappingRule: guessCmd['mappingRule']
     };
   }
-  function maybeCompletePageTransition() {
+  function processPendingPageTransition() {
     if (transitionData.transitionDuration !== undefined && transitionData.pendingPageChange) {
-      calculateTotalTransitionTime(); // This will internally call `handlePossibleUrlChange` again
+      calculateTotalTransitionTime();
     }
   }
 
@@ -3658,6 +3646,9 @@
       }
       if (typeof globalObject['v'] === 'number') {
         var version = String(Math.round(globalObject['v']));
+        {
+          info('Identified version of snippet to be:', version);
+        }
         defaultVars.trackingSnippetVersion = version;
       }
 
