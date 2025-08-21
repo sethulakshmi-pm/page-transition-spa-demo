@@ -2817,9 +2817,6 @@
     if (transitionData.d !== undefined) {
       beacon['d'] = transitionData.d;
     }
-    if (transitionData.rul !== undefined) {
-      beacon['rul'] = transitionData.rul;
-    }
     addCommonBeaconProperties(beacon);
     if (internalMeta) {
       addInternalMetaDataToBeacon(beacon, internalMeta);
@@ -3067,7 +3064,6 @@
     if (resource) {
       info("PageChange:: Last resource loaded: ".concat(resource.name, " transition took ").concat(resourceDuration, "ms"));
       transitionData.resourceDuration = resourceDuration;
-      transitionData.resourceUrl = resource.name;
     } else {
       info('PageChange:: This is with no resource time');
     }
@@ -3266,8 +3262,7 @@
       'view.url': sanitizedUrl
     };
     setPageTransitionData({
-      d: transitionData.totalDuration,
-      rul: transitionData.resourceUrl
+      d: transitionData.totalDuration
     });
     info('PageChange:: Sending page change with duration:', transitionData.totalDuration);
     setPage(customizedPageName, meta);
@@ -3281,7 +3276,6 @@
   }
   function clearTransitionData() {
     transitionData.totalDuration = undefined;
-    transitionData.resourceUrl = undefined;
   }
   function applyCustomPageMappings(urlPath) {
     var rules = getAutoPageDetectionMappingRule();
