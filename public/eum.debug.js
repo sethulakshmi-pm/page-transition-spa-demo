@@ -2997,9 +2997,6 @@
       });
     }, 1);
   };
-
-  // Store durations and timestamps for page transitions
-
   var transitionData = {};
 
   /**
@@ -3009,51 +3006,45 @@
    * If there's a pending page change, complete it with the calculated duration
    */
   function calculateTotalTransitionTime() {
-    // We only need the transition duration to calculate
-    if (transitionData.transitionDuration !== undefined) {
-      var totalDuration = transitionData.transitionDuration;
-      var logMessage = '';
+    var transitionDuration = transitionData.transitionDuration,
+      resourceDuration = transitionData.resourceDuration,
+      timestamp = transitionData.timestamp,
+      eventType = transitionData.eventType,
+      pendingPageChange = transitionData.pendingPageChange;
+    if (transitionDuration === undefined) return;
+    var totalDuration = transitionDuration;
+    var logMessage = '';
 
-      // If resource duration is available, add it to the total
-      if (transitionData.resourceDuration !== undefined) {
-        totalDuration += transitionData.resourceDuration;
-        logMessage = "JKG:: Total transition time: ".concat(totalDuration.toFixed(2), "ms (Resource: ").concat(transitionData.resourceDuration.toFixed(2), "ms + Transition: ").concat(transitionData.transitionDuration.toFixed(2), "ms)");
-      } else {
-        // No resource duration, total is just transition duration
-        logMessage = "JKG:: Total transition time: ".concat(totalDuration.toFixed(2), "ms (Transition only)");
-      }
-
-      // Add timestamp and event type information if available
-      if (transitionData.timestamp) {
-        var eventInfo = transitionData.eventType ? " (Event: ".concat(transitionData.eventType, ")") : '';
-        logMessage += "JKG:: Total transition time - Timestamp: ".concat(new Date(transitionData.timestamp).toISOString()).concat(eventInfo);
-        // console.log('JKG:: Total transition time --Timestamp', transitionData);
-      }
-      console.log(logMessage);
-
-      // Store the total duration for the beacon
-      transitionData.totalDuration = totalDuration;
-
-      // // If there's a pending page change, trigger it now that we have the duration
-      // if (transitionData.pendingPageChange) {
-      //   // Just trigger the handlePossibleUrlChange again now that we have the duration
-      //   handlePossibleUrlChange(transitionData.pendingPageChange.url);
-
-      //   // Clear the pending page change
-      //   transitionData.pendingPageChange = undefined;
-      // }
-      if (transitionData.pendingPageChange) {
-        var _transitionData$pendi = transitionData.pendingPageChange,
-          url = _transitionData$pendi.url,
-          customizedPageName = _transitionData$pendi.customizedPageName;
-        setPageWithConditions(url, customizedPageName, url);
-        transitionData.pendingPageChange = undefined;
-      }
-      // Reset duration data after calculation
-      transitionData.resourceDuration = undefined;
-      transitionData.transitionDuration = undefined;
-      // Keep timestamp and eventType for future beacons
+    // Include resource duration if available
+    if (resourceDuration !== undefined) {
+      totalDuration += resourceDuration;
+      logMessage = "PageChange:: Total transition time: ".concat(totalDuration.toFixed(2), "ms (Resource: ").concat(resourceDuration.toFixed(2), "ms + Transition: ").concat(transitionDuration.toFixed(2), "ms)");
+    } else {
+      logMessage = "PageChange:: Total transition time: ".concat(totalDuration.toFixed(2), "ms (Transition only)");
     }
+
+    // Append timestamp and event type info if available
+    if (timestamp) {
+      var eventInfo = eventType ? " (Event: ".concat(eventType, ")") : '';
+      logMessage += "PageChange:: | Timestamp: ".concat(new Date(timestamp).toISOString()).concat(eventInfo);
+    }
+    info(logMessage);
+
+    // Store total duration for beacon
+    transitionData.totalDuration = totalDuration;
+
+    // Handle pending page change if any
+    if (pendingPageChange) {
+      var url = pendingPageChange.url,
+        customizedPageName = pendingPageChange.customizedPageName;
+      info('PageChange:: handlePossibleUrlChange triggered by pendingPageChange');
+      setPageWithConditions(url, customizedPageName, url);
+      transitionData.pendingPageChange = undefined;
+    }
+
+    // Clear durations after calculation
+    transitionData.transitionDuration = undefined;
+    transitionData.resourceDuration = undefined;
   }
   function configAutoPageDetection() {
     resetPageDetectionState();
@@ -3072,7 +3063,7 @@
   }
   var activeResourceObserver = null;
   function startResourceObservation() {
-    console.log("JKG:: startResourceObservation");
+    console.log('JKG:: startResourceObservation');
     transitionData.state = 'wait';
     if (activeResourceObserver) {
       var _activeResourceObserv, _activeResourceObserv2;
@@ -3095,7 +3086,7 @@
           transitionData.resourceDuration = resourceDuration;
           transitionData.resourceUrl = resource.name;
         } else {
-          console.log("JKG:: this is with no resource time");
+          console.log('JKG:: this is with no resource time');
         }
         // Either way, try to complete
         calculateTotalTransitionTime();
@@ -3105,7 +3096,7 @@
     activeResourceObserver.onBeforeResourceRetrieval();
   }
   function endResourceObservation() {
-    console.log("JKG:: endResourceObservation");
+    console.log('JKG:: endResourceObservation');
     transitionData.state = 'done';
     if (activeResourceObserver) {
       activeResourceObserver.onAfterResourceRetrieved();
@@ -3251,7 +3242,7 @@
       performance.measure(name, startMark, endMark);
       return (_performance$getEntri3 = (_performance$getEntri4 = performance.getEntriesByName(name)[0]) === null || _performance$getEntri4 === void 0 ? void 0 : _performance$getEntri4.duration) !== null && _performance$getEntri3 !== void 0 ? _performance$getEntri3 : null;
     } else {
-      error("Missing marks for measure \"".concat(name, "\":"), {
+      error("Missing marks for measure '".concat(name, "':"), {
         hasStart: hasStart,
         hasEnd: hasEnd
       });
@@ -3278,7 +3269,7 @@
     setPageWithConditions(normalizedUrl, customizedPageName, newUrl);
   }
   function setPageWithConditions(normalizedUrl, customizedPageName, newUrl) {
-    console.log("Reached set page caller !!");
+    console.log('Reached set page caller !!');
     // If we already have the total duration, we can send the beacon immediately
     if (transitionData.totalDuration !== undefined) {
       //Create internal meta data for setPage
