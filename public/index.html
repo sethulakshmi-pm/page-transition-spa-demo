@@ -45,6 +45,19 @@
   <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
 
   <!-- test-june5 in release env to eum.debug.js with SPA & APD OFF-->
+  <!-- <script>
+    (function (s, t, a, n) {
+      s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
+        n.q = [], n.v = 2, n.l = 1 * new Date)
+    })(window, "EumObject", "ineum");
+
+    ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
+    ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
+    ineum('trackSessions');
+  </script>
+  <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
+
+  <!-- test-june5 in release env to eum.debug.js with SPA & APD 'autoPageDetection', { titleAsPageName: true }-->
   <script>
     (function (s, t, a, n) {
       s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
@@ -54,6 +67,7 @@
     ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
     ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
     ineum('trackSessions');
+    ineum('autoPageDetection', { titleAsPageName: true });
   </script>
   <script defer crossorigin="anonymous" src="eum.debug.js"></script>
 
