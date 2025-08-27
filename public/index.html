@@ -72,7 +72,7 @@
   <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
 
   <!-- test-june5 in release env to eum.debug.js with SPA & APD 'autoPageDetection', true-->
-  <script>
+  <!-- <script>
     (function (s, t, a, n) {
       s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
         n.q = [], n.v = 2, n.l = 1 * new Date)
@@ -82,6 +82,20 @@
     ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
     ineum('trackSessions');
     ineum('autoPageDetection', true);
+  </script>
+  <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
+
+  <!-- test-june5 in release env to eum.debug.js with SPA & APD 'autoPageDetection', mappingRule -->
+  <script>
+    (function (s, t, a, n) {
+      s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
+        n.q = [], n.v = 2, n.l = 1 * new Date)
+    })(window, "EumObject", "ineum");
+
+    ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
+    ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
+    ineum('trackSessions');
+    ineum('autoPageDetection', { mappingRule: [[/.*apiCall.*/i, 'apiCall-sethu'], [/.*blogs.*/i, 'blogs - sethu']] });
   </script>
   <script defer crossorigin="anonymous" src="eum.debug.js"></script>
 
