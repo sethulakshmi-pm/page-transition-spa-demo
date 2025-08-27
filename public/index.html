@@ -18,7 +18,7 @@
   <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
 
   <!-- test-june5 in release env to eum.debug.js-->
-  <script>
+  <!-- <scrizpt>
     (function (s, t, a, n) {
       s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
         n.q = [], n.v = 2, n.l = 1 * new Date)
@@ -29,7 +29,21 @@
     ineum('trackSessions');
     ineum('autoPageDetection', true);
   </script>
-  <script defer crossorigin="anonymous" src="eum.debug.js"></script>
+  <script defer crossorigin="anonymous" src="eum.debug.js"></script> -->
+
+  <!-- test-june5 in release env to eum.debug.js with APD OFF-->
+  <script>
+    (function (s, t, a, n) {
+      s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
+        n.q = [], n.v = 2, n.l = 1 * new Date)
+    })(window, "InstanaEumObject", "ineum");
+
+    ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
+    ineum('key', 'orCW9cNHSIe0cJii-I0Epw');
+    ineum('trackSessions');
+  </script>
+  <script defer crossorigin="anonymous" src="https://eum-magenta-saas.instana.rocks/1.7.5/eum.min.js"
+    integrity="sha384-HJjb3vveemdYNUfM1D28dTeXpPPbwPWJinH9ldaGt3KxCO0PNRc4Jb3oQIxMmJMk"></script>
 
   <!-- dynatrace script enabled. -->
   <script type="text/javascript"
