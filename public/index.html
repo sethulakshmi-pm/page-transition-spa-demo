@@ -3,6 +3,20 @@
 
 <head>
 
+  <!-- in release env, website name - "oct-1" -->
+  <script>
+    (function (s, t, a, n) {
+      s[t] || (s[t] = a, n = s[a] = function () { n.q.push(arguments) },
+        n.q = [], n.v = 2, n.l = 1 * new Date)
+    })(window, "InstanaEumObject", "ineum");
+
+    ineum('reportingUrl', 'https://eum-magenta-saas.instana.rocks');
+    ineum('key', 'X-A5AnRVShGnyB6icoIQGQ');
+    ineum('trackSessions');
+    ineum('autoPageDetection', { titleAsPageName: true });
+  </script>
+  <script defer crossorigin="anonymous" src="https://eum-magenta-saas.instana.rocks/1.8.0/eum.debug.js"></script>
+
   <!-- page-transition-14-may in release env-->
   <!-- <script>
     (function (s, t, a, n) {
